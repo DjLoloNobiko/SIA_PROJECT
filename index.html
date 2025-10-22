@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ICCT Student Portal</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    :root{
+      --bg-main:#000;
+      --bg-alt:#111;
+      --text-main:#fff;
+      --border-main:#fff;
+      --shadow:#fff;
+      --accent:#0f0;
+    }
+
+    body.light{
+      --bg-main:#fff;
+      --bg-alt:#f3f3f3;
+      --text-main:#000;
+      --border-main:#000;
+      --shadow:#000;
+      --accent:#0066cc;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      padding:0;
+      font-family:'Press Start 2P',monospace;
+      background:repeating-linear-gradient(45deg,var(--bg-main) 0px,var(--bg-main) 4px,var(--bg-alt) 4px,var(--bg-alt) 8px);
+      color:var(--text-main);
+      image-rendering:pixelated;
+      transition:background .4s ease,color .4s ease;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* header */
+    header{
+      background-color:var(--bg-main);
+      border-bottom:2px solid var(--border-main);
+      padding:10px;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+    }
+
+    .header-left{ display:flex; align-items:center; gap:12px; }
+
+    .header-profile{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:220px;
+      font-size:9px;
+      text-align:left;
+    }
+
+    .header-profile img{
+      width:48px; height:48px; border:2px solid var(--border-main); object-fit:cover; image-rendering:pixelated; background:var(--bg-alt);
+    }
+
+    .header-profile .info{ display:flex; flex-direction:column; line-height:1.1; font-size:8px; }
+
+    .portal-title{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      font-size:14px;
+      pointer-events:none;
+    }
+
+    /* datetime & theme */
+    #datetime{ font-size:8px; text-align:right; line-height:1.3; margin-bottom:4px; }
+    #themeToggle{
+      font-family:'Press Start 2P',monospace;
+      font-size:8px;
+      background:none;
+      border:1px solid var(--border-main);
+      color:var(--text-main);
+      padding:5px 8px;
+      cursor:pointer;
+      transition:all .2s;
+      margin-left:6px;
+    }
+    #themeToggle:hover{ background:var(--text-main); color:var(--bg-main); }
+
+    /* nav */
+    nav{ display:flex; justify-content:center; background-color:var(--bg-alt); border-bottom:2px solid var(--border-main); flex-wrap:wrap; }
+    nav button{
+      background:none; border:none; color:var(--text-main); padding:10px 16px; font-family:'Press Start 2P'; font-size:10px; cursor:pointer; border-right:1px solid var(--border-main);
+    }
+    nav button:hover, nav button.active{ background:var(--text-main); color:var(--bg-main); }
+
+    .content{ flex:1; padding:20px; min-height:calc(100vh - 220px); } /* give enough room so footer sits bottom */
+
+    section{
+      display:none;
+      background:rgba(0,0,0,0.85);
+      border:2px solid var(--border-main);
+      padding:20px;
+      margin:10px auto;
+      max-width:900px;
+      box-shadow:4px 4px 0 var(--shadow);
+    }
+    body.light section{ background:rgba(255,255,255,0.85); }
+    section.active{ display:block; }
+
+    table{ width:100%; border-collapse:collapse; margin-top:15px; font-size:10px; }
+    th,td{ border:1px solid var(--border-main); padding:8px; text-align:left; color:var(--text-main); vertical-align:middle; }
+    th{ background:var(--bg-alt); }
+    td.editable{ background:var(--bg-main); outline:none; }
+    body.light td.editable{ background:#fff; color:#000; }
+
+    .edit-btn{ font-family:'Press Start 2P'; font-size:8px; padding:5px 10px; background:none; border:1px solid var(--border-main); color:var(--text-main); cursor:pointer; margin-bottom:10px; }
+    .edit-btn:hover{ background:var(--text-main); color:var(--bg-main); }
+
+    #profilePic{ width:120px; height:120px; border:2px solid var(--border-main); object-fit:cover; image-rendering:pixelated; display:block; margin-bottom:10px; background:var(--bg-alt); }
+
+    /* pixel fade overlay */
+    .pixel-fade{ position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:999; background-size:8px 8px; animation:pixelFade .6s steps(6) forwards; }
+    @keyframes pixelFade{
+      0%{ opacity:0; background-image:none }
+      10%{ opacity:1; background-image:repeating-linear-gradient(0deg,#000 0,#000 4px,transparent 4px,transparent 8px) }
+      40%{ background-image:repeating-linear-gradient(90deg,#000 0,#000 4px,transparent 4px,transparent 8px) }
+      60%{ background-image:repeating-linear-gradient(45deg,#000 0,#000 3px,transparent 3px,transparent 6px) }
+      80%{ background-image:repeating-linear-gradient(-45deg,#000 0,#000 3px,transparent 3px,transparent 6px) }
+      100%{ opacity:0; background-image:none }
+    }
+    body.light .pixel-fade{ animation:pixelFadeLight .6s steps(6) forwards; }
+    @keyframes pixelFadeLight{
+      0%{ opacity:0; background-image:none }
+      10%{ opacity:1; background-image:repeating-linear-gradient(0deg,#fff 0,#fff 4px,transparent 4px,transparent 8px) }
+      40%{ background-image:repeating-linear-gradient(90deg,#fff 0,#fff 4px,transparent 4px,transparent 8px) }
+      60%{ background-image:repeating-linear-gradient(45deg,#fff 0,#fff 3px,transparent 3px,transparent 6px) }
+      80%{ background-image:repeating-linear-gradient(-45deg,#fff 0,#fff 3px,transparent 3px,transparent 6px) }
+      100%{ opacity:0; background-image:none }
+    }
+
+    .announcement-box{
+      border:2px solid var(--border-main);
+      padding:12px;
+      margin-top:15px;
+      font-size:10px;
+      background:var(--bg-alt);
+      max-height:220px;
+      overflow-y:auto;
+      line-height:1.6;
+    }
+    .announcement-box h4{ margin:0 0 10px 0; text-decoration:underline; }
+    .announcement-box ul{ padding-left:18px; margin:0; }
+    .announcement-box li{ margin-bottom:14px; }
+
+    .footer{ text-align:center; border-top:2px solid var(--border-main); padding:10px; font-size:10px; background:var(--bg-main); color:#888; margin-top:auto; }
+    @media (max-width:720px){
+      .header-profile{ display:none; }
+      .portal-title{ font-size:12px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <div class="header-profile" id="headerProfile">
+        <img id="headerProfilePic" src="https://via.placeholder.com/48x48?text=PIC" alt="profile">
+        <div class="info">
+          <span id="headerName">Cade Paris A. Medenilla</span>
+          <span id="headerCourse">BS Information Technology</span>
+          <span id="headerYear">Third Year</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="portal-title">ICCT STUDENT PORTAL</div>
+
+    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+      <div id="datetime"></div>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button id="themeToggle" onclick="toggleTheme()">SWITCH THEME</button>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="active" onclick="showSection('dashboard', event)">Dashboard</button>
+    <button onclick="showSection('profile', event)">Student Profile</button>
+    <button onclick="showSection('subjects', event)">Subjects</button>
+    <button onclick="showSection('schedule', event)">Class Schedule</button>
+    <button onclick="showSection('grades', event)">Grades</button>
+    <button onclick="showSection('requirements', event)">Requirements</button>
+    <button onclick="showSection('account', event)">Account & Payments</button>
+    <button onclick="showSection('clearance', event)">Clearance</button>
+  </nav>
+
+  <div class="content">
+    <section id="dashboard" class="active">
+      <h3>Welcome, Student!</h3>
+      <p>System Status: ONLINE</p>
+
+      <div class="announcement-box">
+        <h4>[ANNOUNCEMENTS]</h4>
+        <ul id="announcementList"></ul>
+      </div>
+    </section>
+
+    <section id="profile">
+      <h3>Student Profile</h3>
+      <button class="edit-btn" onclick="toggleEdit('profile', event)">EDIT</button>
+      <div style="display:flex; align-items:flex-start; gap:20px;">
+        <table id="profileTable" style="flex:1;">
+          <tr><th>Name</th><td>Alexandra Cruz</td></tr>
+          <tr><th>ID Number</th><td>2025-00123</td></tr>
+          <tr><th>Course</th><td>BS Computer Science</td></tr>
+          <tr><th>Year Level</th><td>3rd Year</td></tr>
+          <tr><th>Email</th><td>alex.cruz@example.edu</td></tr>
+        </table>
+
+        <div style="text-align:center;">
+          <img id="profilePic" src="https://via.placeholder.com/120x120?text=Profile" alt="Profile Picture">
+          <input id="uploadPic" type="file" accept="image/*" style="display:none;">
+          <button class="edit-btn" onclick="document.getElementById('uploadPic').click()">UPLOAD</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="subjects">
+      <h3>Subjects</h3>
+      <button class="edit-btn" onclick="toggleEdit('subjects', event)">EDIT</button>
+      <table id="subjectsTable">
+        <tr><th>Subject Code</th><th>Subject Name</th><th>Units</th></tr>
+        <tr><td>CS301</td><td>Software Engineering</td><td>3</td></tr>
+        <tr><td>CS302</td><td>Database Systems</td><td>3</td></tr>
+        <tr><td>CS303</td><td>Operating Systems</td><td>3</td></tr>
+      </table>
+    </section>
+
+    <section id="schedule">
+      <h3>Class Schedule</h3>
+      <button class="edit-btn" onclick="toggleEdit('schedule', event)">EDIT</button>
+      <table id="scheduleTable">
+        <tr><th>Day</th><th>Time</th><th>Subject</th><th>Room</th></tr>
+        <tr><td>Monday</td><td>8:00 - 10:00 AM</td><td>Software Engineering</td><td>CS Bldg 102</td></tr>
+        <tr><td>Wednesday</td><td>10:00 - 12:00 NN</td><td>Database Systems</td><td>CS Lab 201</td></tr>
+      </table>
+    </section>
+
+    <section id="grades">
+      <h3>Grades and Records</h3>
+      <button class="edit-btn" onclick="toggleEdit('grades', event)">EDIT</button>
+      <table id="gradesTable">
+        <tr><th>Subject</th><th>Midterm</th><th>Final</th><th>Remarks</th></tr>
+        <tr><td>Software Engineering</td><td>1.75</td><td>1.50</td><td>Passed</td></tr>
+        <tr><td>Database Systems</td><td>2.00</td><td>1.75</td><td>Passed</td></tr>
+      </table>
+    </section>
+
+    <section id="requirements">
+      <h3>Requirements</h3>
+      <button class="edit-btn" onclick="toggleEdit('requirements', event)">EDIT</button>
+      <table id="requirementsTable">
+        <tr><th>Document</th><th>Status</th></tr>
+        <tr><td>Form 137</td><td>Submitted</td></tr>
+        <tr><td>Good Moral</td><td>Pending</td></tr>
+      </table>
+    </section>
+
+    <section id="account">
+      <h3>Account & Payments</h3>
+      <button class="edit-btn" onclick="toggleEdit('account', event)">EDIT</button>
+      <table id="accountTable">
+        <tr><th>Term</th><th>Balance</th><th>Status</th></tr>
+        <tr><td>1st Semester</td><td>₱2,500.00</td><td>Unpaid</td></tr>
+        <tr><td>2nd Semester</td><td>₱0.00</td><td>Paid</td></tr>
+      </table>
+    </section>
+
+    <section id="clearance">
+      <h3>Clearance</h3>
+      <button class="edit-btn" onclick="toggleEdit('clearance', event)">EDIT</button>
+      <table id="clearanceTable">
+        <tr><th>Office</th><th>Status</th></tr>
+        <tr><td>Library</td><td>Cleared</td></tr>
+        <tr><td>Accounting</td><td>Pending</td></tr>
+      </table>
+    </section>
+  </div>
+
+  <div class="footer">© 1998–2025 Student Portal System</div>
+
+  <script>
+    /* --------- DOM refs --------- */
+    const profilePic = document.getElementById('profilePic');
+    const uploadInput = document.getElementById('uploadPic');
+    const headerPic = document.getElementById('headerProfilePic');
+    const headerNameEl = document.getElementById('headerName');
+    const headerCourseEl = document.getElementById('headerCourse');
+    const headerYearEl = document.getElementById('headerYear');
+
+    /* --------- Navigation (uses event target) --------- */
+    function showSection(id, evt){
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      const sec = document.getElementById(id);
+      if(sec) sec.classList.add('active');
+      if(evt && evt.target){
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        evt.target.classList.add('active');
+      }
+    }
+
+    /* --------- Live date/time (MM/DD/YYYY and 12-hour clock) --------- */
+    function updateDateTime(){
+      const now = new Date();
+      const mm = String(now.getMonth()+1).padStart(2,'0');
+      const dd = String(now.getDate()).padStart(2,'0');
+      const yyyy = now.getFullYear();
+      let hh = now.getHours();
+      const min = String(now.getMinutes()).padStart(2,'0');
+      const sec = String(now.getSeconds()).padStart(2,'0');
+      const ampm = hh >= 12 ? 'PM' : 'AM';
+      hh = hh % 12 || 12;
+      const time = `${hh}:${min}:${sec} ${ampm}`;
+      const date = `${mm}/${dd}/${yyyy}`;
+      const dt = document.getElementById('datetime');
+      if(dt) dt.innerHTML = `${date}<br>${time}`;
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    /* --------- Theme toggle with pixel overlay + persistence --------- */
+    function toggleTheme(){
+      const overlay = document.createElement('div');
+      overlay.className = 'pixel-fade';
+      document.body.appendChild(overlay);
+      setTimeout(() => {
+        document.body.classList.toggle('light');
+        localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+      }, 180);
+      setTimeout(()=> overlay.remove(), 700);
+    }
+
+    /* --------- Format date helper (MM/DD/YYYY) --------- */
+    function formatDateMMDDYYYY(date){
+      const mm = String(date.getMonth()+1).padStart(2,'0');
+      const dd = String(date.getDate()).padStart(2,'0');
+      const yyyy = date.getFullYear();
+      return `${mm}/${dd}/${yyyy}`;
+    }
+
+    /* --------- Load saved data on startup --------- */
+    window.addEventListener('load', ()=>{
+      // theme
+      const savedTheme = localStorage.getItem('theme');
+      if(savedTheme === 'light') document.body.classList.add('light');
+
+      // tables
+      document.querySelectorAll('table').forEach(t => {
+        const saved = localStorage.getItem(t.id);
+        if(saved) t.innerHTML = saved;
+      });
+
+      // profile pic
+      const savedPic = localStorage.getItem('profilePic');
+      if(savedPic){
+        profilePic.src = savedPic;
+        headerPic.src = savedPic;
+      }
+
+      // header text: either from saved profile fields or fallback saved strings
+      const storedName = localStorage.getItem('profile_name');
+      const storedCourse = localStorage.getItem('profile_course');
+      const storedYear = localStorage.getItem('profile_year');
+
+      // If profile table exists, use it (it may have been loaded from saved table HTML already)
+      updateHeaderFromProfile();
+
+      // If header text keys exist in localStorage (fallback), apply them
+      if(storedName) headerNameEl.textContent = storedName;
+      if(storedCourse) headerCourseEl.textContent = storedCourse;
+      if(storedYear) headerYearEl.textContent = storedYear;
+
+      // announcements
+      loadAnnouncements();
+    });
+
+    /* --------- Upload profile pic (sync to header + save) --------- */
+    uploadInput.addEventListener('change', e => {
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        const data = ev.target.result;
+        profilePic.src = data;
+        headerPic.src = data;
+        localStorage.setItem('profilePic', data);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    /* --------- Toggle Edit / Save for table sections --------- */
+    function toggleEdit(section, evt){
+      const btn = evt && evt.target ? evt.target : null;
+      const table = document.getElementById(section + 'Table');
+      if(!table || !btn) return;
+      const isSave = btn.textContent === 'SAVE';
+      if(isSave){
+        // turn off editing
+        table.querySelectorAll('td').forEach(td => {
+          td.contentEditable = false;
+          td.classList.remove('editable');
+        });
+        btn.textContent = 'EDIT';
+        saveAllData();
+      } else {
+        table.querySelectorAll('td').forEach(td => {
+          td.contentEditable = true;
+          td.classList.add('editable');
+        });
+        btn.textContent = 'SAVE';
+      }
+    }
+
+    /* --------- Save all tables & header profile text to localStorage --------- */
+    function saveAllData(){
+      document.querySelectorAll('table').forEach(t => {
+        localStorage.setItem(t.id, t.innerHTML);
+      });
+      // update header fields from profile table and persist them
+      updateHeaderFromProfile(true);
+    }
+
+    /* --------- Update header from profile table (and optionally persist) --------- */
+    function updateHeaderFromProfile(persist = false){
+      const profileTable = document.getElementById('profileTable');
+      if(!profileTable) return;
+      try{
+        const rows = profileTable.rows;
+        const name = rows[0] && rows[0].cells[1] ? rows[0].cells[1].innerText.trim() : headerNameEl.textContent;
+        const course = rows[2] && rows[2].cells[1] ? rows[2].cells[1].innerText.trim() : headerCourseEl.textContent;
+        const year = rows[3] && rows[3].cells[1] ? rows[3].cells[1].innerText.trim() : headerYearEl.textContent;
+
+        if(name) headerNameEl.textContent = name;
+        if(course) headerCourseEl.textContent = course;
+        if(year) headerYearEl.textContent = year;
+
+        if(persist){
+          localStorage.setItem('profile_name', headerNameEl.textContent);
+          localStorage.setItem('profile_course', headerCourseEl.textContent);
+          localStorage.setItem('profile_year', headerYearEl.textContent);
+        }
+      }catch(err){
+        console.warn('updateHeaderFromProfile failed', err);
+      }
+    }
+
+    /* expose save function (useful when user clicks SAVE) */
+    window.saveAllData = saveAllData;
+
+    /* --------- keep header in sync after manual edits (optional auto-run) --------- */
+    // When the profile table is saved, we call updateHeaderFromProfile(true) in saveAllData.
+    // Also offer a MutationObserver to update header live while editing (non-persistent until Save).
+    (function observeProfileEdits(){
+      const profileTable = document.getElementById('profileTable');
+      if(!profileTable) return;
+      const obs = new MutationObserver(()=> updateHeaderFromProfile(false));
+      obs.observe(profileTable, { subtree:true, characterData:true, childList:true });
+    })();
+
+    /* --------- Load announcements (spaced, MM/DD/YYYY, scrollable) --------- */
+    function loadAnnouncements(){
+      const list = document.getElementById('announcementList');
+      if(!list) return;
+      // Clear existing (in case)
+      list.innerHTML = '';
+
+      const today = formatDateMMDDYYYY(new Date());
+      const announcements = [
+        "New Students (Freshmen, Transferees and Second Coursers) are WELCOME to enroll this 2nd Trimester Academic Year 2025-2026!",
+        "Walk-In / Online Application and Enrollment ongoing up to November 29, 2025. Classes start December 3, 2025.",
+        "Robothinks are coming this 2026! Buy your ticket now!"
+      ];
+
+      announcements.forEach(text => {
+        const li = document.createElement('li');
+        // add spacing by splitting into short paragraphs if needed (we keep it simple and readable)
+        li.textContent = `${text} (Posted: ${today})`;
+        list.appendChild(li);
+      });
+    }
+
+  </script>
+</body>
+</html>
