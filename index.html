@@ -1,499 +1,3017 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ICCT Student Portal</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal | Dashboard</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    :root{
-      --bg-main:#000;
-      --bg-alt:#111;
-      --text-main:#fff;
-      --border-main:#fff;
-      --shadow:#fff;
-      --accent:#0f0;
-    }
+    <style>
+        /*--------------------------------------------------
+          [1. ROOT VARIABLES & THEME]
+        ----------------------------------------------------*/
+        :root {
+            --font-header: 'Silkscreen', 'Courier New', Courier, monospace;
+            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 
-    body.light{
-      --bg-main:#fff;
-      --bg-alt:#f3f3f3;
-      --text-main:#000;
-      --border-main:#000;
-      --shadow:#000;
-      --accent:#0066cc;
-    }
+            /* Default Black & White Theme (Light) */
+            --color-bg: #FFFFFF;
+            --color-bg-alt: #F0F0F0;
+            --color-text: #0A0A0A;
+            --color-text-alt: #555555;
+            --color-border: #0A0A0A;
+            --color-shadow: #0A0A0A;
+            --color-primary: #0A0A0A; /* Accent color, defaults to text color */
+            
+            --color-success: #008000;
+            --color-danger: #D00000;
+            --color-warning: #FAA916;
+            --color-info: #00529B;
+            
+            --pixel-border: 2px solid var(--color-border);
+            --pixel-shadow: 4px 4px 0px var(--color-shadow);
+        }
 
-    html,body{
-      height:100%;
-      margin:0;
-      padding:0;
-      font-family:'Press Start 2P',monospace;
-      background:repeating-linear-gradient(45deg,var(--bg-main) 0px,var(--bg-main) 4px,var(--bg-alt) 4px,var(--bg-alt) 8px);
-      color:var(--text-main);
-      image-rendering:pixelated;
-      transition:background .4s ease,color .4s ease;
-      display:flex;
-      flex-direction:column;
-    }
+        /* Dark Mode */
+        body.dark-mode {
+            --color-bg: #0A0A0A;
+            --color-bg-alt: #1A1A1A;
+            --color-text: #EFEFEF;
+            --color-text-alt: #AAAAAA;
+            --color-border: #EFEFEF;
+            --color-shadow: #EFEFEF;
+            --color-primary: var(--theme-color, #EFEFEF); /* Use theme color or default text */
+        }
+        
+        /* Theme Color Overrides (Applied via body attribute) */
+        body[data-theme="blue"]    { --theme-color: #007BFF; }
+        body[data-theme="maroon"]  { --theme-color: #800000; }
+        body[data-theme="green"]   { --theme-color: #006400; }
+        body[data-theme="purple"]  { --theme-color: #4B0082; }
+        
+        /* Apply theme color to --color-primary when a theme is set */
+        body[data-theme]:not([data-theme="bw"]) {
+            --color-primary: var(--theme-color);
+            /* In dark mode, we keep the light theme color for contrast */
+        }
+        
+        body.dark-mode[data-theme]:not([data-theme="bw"]) {
+             --color-primary: var(--theme-color);
+        }
 
-    /* header */
-    header{
-      background-color:var(--bg-main);
-      border-bottom:2px solid var(--border-main);
-      padding:10px;
-      position:relative;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      letter-spacing:1px;
-      text-transform:uppercase;
-    }
+        /*--------------------------------------------------
+          [2. GLOBAL & RESET]
+        ----------------------------------------------------*/
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    .header-left{ display:flex; align-items:center; gap:12px; }
+        html {
+            scroll-behavior: smooth;
+        }
 
-    .header-profile{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      min-width:220px;
-      font-size:9px;
-      text-align:left;
-    }
+        body {
+            font-family: var(--font-body);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: 1fr;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body.focus-mode {
+            grid-template-columns: 0 1fr;
+        }
+        
+        body.focus-mode #sidebar {
+            transform: translateX(-100%);
+            padding: 0;
+        }
 
-    .header-profile img{
-      width:48px; height:48px; border:2px solid var(--border-main); object-fit:cover; image-rendering:pixelated; background:var(--bg-alt);
-    }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-header);
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.5rem; }
 
-    .header-profile .info{ display:flex; flex-direction:column; line-height:1.1; font-size:8px; }
+        p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            color: var(--color-text-alt);
+        }
 
-    .portal-title{
-      position:absolute;
-      left:50%;
-      transform:translateX(-50%);
-      font-size:14px;
-      pointer-events:none;
-    }
+        a {
+            color: var(--color-primary);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        a:hover {
+            opacity: 0.7;
+            text-decoration: underline;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+            image-rendering: pixelated; /* Pixelated theme */
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            border: var(--pixel-border);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            border: var(--pixel-border);
+            text-align: left;
+        }
+        
+        thead tr {
+            background-color: var(--color-bg-alt);
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: var(--color-bg-alt);
+        }
+        
+        tbody tr:hover {
+            background-color: var(--color-primary);
+            color: var(--color-bg);
+        }
+        tbody tr:hover p {
+            color: var(--color-bg);
+        }
 
-    /* datetime & theme */
-    #datetime{ font-size:8px; text-align:right; line-height:1.3; margin-bottom:4px; }
-    #themeToggle{
-      font-family:'Press Start 2P',monospace;
-      font-size:8px;
-      background:none;
-      border:1px solid var(--border-main);
-      color:var(--text-main);
-      padding:5px 8px;
-      cursor:pointer;
-      transition:all .2s;
-      margin-left:6px;
-    }
-    #themeToggle:hover{ background:var(--text-main); color:var(--bg-main); }
+        /*--------------------------------------------------
+          [3. "PIXEL" UI COMPONENTS]
+        ----------------------------------------------------*/
+        .card {
+            background-color: var(--color-bg);
+            border: var(--pixel-border);
+            box-shadow: var(--pixel-shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .card:hover {
+            box-shadow: 6px 6px 0px var(--color-shadow);
+            transform: translate(-2px, -2px);
+        }
 
-    /* nav */
-    nav{ display:flex; justify-content:center; background-color:var(--bg-alt); border-bottom:2px solid var(--border-main); flex-wrap:wrap; }
-    nav button{
-      background:none; border:none; color:var(--text-main); padding:10px 16px; font-family:'Press Start 2P'; font-size:10px; cursor:pointer; border-right:1px solid var(--border-main);
-    }
-    nav button:hover, nav button.active{ background:var(--text-main); color:var(--bg-main); }
+        .btn {
+            font-family: var(--font-header);
+            font-size: 1rem;
+            display: inline-block;
+            cursor: pointer;
+            padding: 12px 24px;
+            text-align: center;
+            color: var(--color-text);
+            background-color: var(--color-bg);
+            border: var(--pixel-border);
+            box-shadow: var(--pixel-shadow);
+            transition: all 0.15s ease-out;
+            user-select: none;
+        }
+        .btn:hover {
+            box-shadow: 6px 6px 0px var(--color-shadow);
+            transform: translate(-2px, -2px);
+            text-decoration: none;
+        }
+        .btn:active {
+            box-shadow: 2px 2px 0px var(--color-shadow);
+            transform: translate(2px, 2px);
+        }
+        
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: var(--color-bg);
+            border-color: var(--color-primary);
+            box-shadow: 4px 4px 0px var(--color-primary);
+        }
+        
+        body.dark-mode .btn-primary {
+            color: var(--color-bg); /* Keep text color light/contrasting */
+        }
+        
+        .btn-success { background-color: var(--color-success); color: #fff; }
+        .btn-danger  { background-color: var(--color-danger); color: #fff; }
 
-    .content{ flex:1; padding:20px; min-height:calc(100vh - 220px); } /* give enough room so footer sits bottom */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="date"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            border: var(--pixel-border);
+            margin-bottom: 1rem;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            font-family: var(--font-header);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
 
-    section{
-      display:none;
-      background:rgba(0,0,0,0.85);
-      border:2px solid var(--border-main);
-      padding:20px;
-      margin:10px auto;
-      max-width:900px;
-      box-shadow:4px 4px 0 var(--shadow);
-    }
-    body.light section{ background:rgba(255,255,255,0.85); }
-    section.active{ display:block; }
+        /*--------------------------------------------------
+          [4. LAYOUT: SIDEBAR & MAIN]
+        ----------------------------------------------------*/
+        #sidebar {
+            grid-column: 1 / 2;
+            background-color: var(--color-bg-alt);
+            border-right: var(--pixel-border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            width: 240px;
+            transition: transform 0.3s ease, padding 0.3s ease;
+            overflow-y: auto;
+        }
 
-    table{ width:100%; border-collapse:collapse; margin-top:15px; font-size:10px; }
-    th,td{ border:1px solid var(--border-main); padding:8px; text-align:left; color:var(--text-main); vertical-align:middle; }
-    th{ background:var(--bg-alt); }
-    td.editable{ background:var(--bg-main); outline:none; }
-    body.light td.editable{ background:#fff; color:#000; }
+        #sidebar-header {
+            font-family: var(--font-header);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--color-primary);
+        }
+        #sidebar-header .fa-user-graduate {
+            display: block;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
 
-    .edit-btn{ font-family:'Press Start 2P'; font-size:8px; padding:5px 10px; background:none; border:1px solid var(--border-main); color:var(--text-main); cursor:pointer; margin-bottom:10px; }
-    .edit-btn:hover{ background:var(--text-main); color:var(--bg-main); }
+        #sidebar-nav {
+            list-style: none;
+            flex-grow: 1;
+        }
+        #sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            padding: 14px 10px;
+            font-family: var(--font-header);
+            font-size: 1.1rem;
+            color: var(--color-text-alt);
+            border-bottom: 1px solid var(--color-border);
+            transition: all 0.2s;
+        }
+        #sidebar-nav li a:hover {
+            background-color: var(--color-primary);
+            color: var(--color-bg);
+            text-decoration: none;
+        }
+        #sidebar-nav li a.active {
+            background-color: var(--color-primary);
+            color: var(--color-bg);
+            box-shadow: inset 4px 0 0 var(--color-border);
+        }
+        #sidebar-nav li a i {
+            width: 30px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
 
-    #profilePic{ width:120px; height:120px; border:2px solid var(--border-main); object-fit:cover; image-rendering:pixelated; display:block; margin-bottom:10px; background:var(--bg-alt); }
+        #sidebar-footer {
+            padding-top: 1rem;
+            font-size: 0.8rem;
+            text-align: center;
+            color: var(--color-text-alt);
+        }
 
-    /* pixel fade overlay */
-    .pixel-fade{ position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:999; background-size:8px 8px; animation:pixelFade .6s steps(6) forwards; }
-    @keyframes pixelFade{
-      0%{ opacity:0; background-image:none }
-      10%{ opacity:1; background-image:repeating-linear-gradient(0deg,#000 0,#000 4px,transparent 4px,transparent 8px) }
-      40%{ background-image:repeating-linear-gradient(90deg,#000 0,#000 4px,transparent 4px,transparent 8px) }
-      60%{ background-image:repeating-linear-gradient(45deg,#000 0,#000 3px,transparent 3px,transparent 6px) }
-      80%{ background-image:repeating-linear-gradient(-45deg,#000 0,#000 3px,transparent 3px,transparent 6px) }
-      100%{ opacity:0; background-image:none }
-    }
-    body.light .pixel-fade{ animation:pixelFadeLight .6s steps(6) forwards; }
-    @keyframes pixelFadeLight{
-      0%{ opacity:0; background-image:none }
-      10%{ opacity:1; background-image:repeating-linear-gradient(0deg,#fff 0,#fff 4px,transparent 4px,transparent 8px) }
-      40%{ background-image:repeating-linear-gradient(90deg,#fff 0,#fff 4px,transparent 4px,transparent 8px) }
-      60%{ background-image:repeating-linear-gradient(45deg,#fff 0,#fff 3px,transparent 3px,transparent 6px) }
-      80%{ background-image:repeating-linear-gradient(-45deg,#fff 0,#fff 3px,transparent 3px,transparent 6px) }
-      100%{ opacity:0; background-image:none }
-    }
+        #main-app {
+            grid-column: 2 / 3;
+            padding: 2rem;
+            overflow-y: auto;
+            /* Fade-in transition for page loads */
+            animation: fadeIn 0.5s ease;
+        }
+        
+        #page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: var(--pixel-border);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        #live-datetime {
+            font-family: var(--font-header);
+            font-size: 1.1rem;
+            text-align: right;
+        }
 
-    .announcement-box{
-      border:2px solid var(--border-main);
-      padding:12px;
-      margin-top:15px;
-      font-size:10px;
-      background:var(--bg-alt);
-      max-height:220px;
-      overflow-y:auto;
-      line-height:1.6;
-    }
-    .announcement-box h4{ margin:0 0 10px 0; text-decoration:underline; }
-    .announcement-box ul{ padding-left:18px; margin:0; }
-    .announcement-box li{ margin-bottom:14px; }
+        /*--------------------------------------------------
+          [5. PAGE-SPECIFIC STYLES]
+        ----------------------------------------------------*/
+        
+        /* Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background-color: var(--color-bg-alt);
+            border: var(--pixel-border);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--color-primary);
+        }
+        .stat-card h4 {
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--color-text);
+        }
+        .stat-card p {
+            font-family: var(--font-header);
+            font-size: 1rem;
+            margin: 0;
+            color: var(--color-text-alt);
+        }
+        
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        #announcement-ticker {
+            background: var(--color-bg-alt);
+            border: var(--pixel-border);
+            padding: 1rem;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        #announcement-ticker p {
+            margin: 0;
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker-scroll 20s linear infinite;
+        }
 
-    .footer{ text-align:center; border-top:2px solid var(--border-main); padding:10px; font-size:10px; background:var(--bg-main); color:#888; margin-top:auto; }
-    @media (max-width:720px){
-      .header-profile{ display:none; }
-      .portal-title{ font-size:12px; }
-    }
-  </style>
+        /* Academics / Grades */
+        .gpa-calculator .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        #gpa-result {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 1rem;
+            border: var(--pixel-border);
+            background: var(--color-bg-alt);
+        }
+        #academic-standing {
+            font-family: var(--font-header);
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        /* Exam Permit */
+        .exam-permit-container {
+            border: 4px dashed var(--color-border);
+            padding: 2rem;
+        }
+        .permit-header {
+            text-align: center;
+            border-bottom: var(--pixel-border);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        .permit-header h3 {
+            margin: 0;
+        }
+        .permit-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .permit-signature {
+            font-family: 'Brush Script MT', cursive; /* Simulated signature */
+            font-size: 2rem;
+            border-top: var(--pixel-border);
+            padding-top: 0.5rem;
+            margin-top: 2rem;
+            max-width: 250px;
+        }
+        .permit-status {
+            font-family: var(--font-header);
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 2rem;
+            border: var(--pixel-border);
+        }
+        .status-approved { color: var(--color-success); border-color: var(--color-success); }
+        .status-pending { color: var(--color-danger); border-color: var(--color-danger); }
+        
+        /* Clearance & Progress */
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: var(--color-bg-alt);
+            border: var(--pixel-border);
+            margin-bottom: 1rem;
+        }
+        .progress-bar-inner {
+            height: 100%;
+            width: 0%; /* Set by JS */
+            background-color: var(--color-success);
+            transition: width 0.5s ease;
+        }
+        .clearance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: var(--pixel-border);
+            margin-bottom: 1rem;
+        }
+        .clearance-status {
+            font-family: var(--font-header);
+            font-weight: 700;
+        }
+
+        /* Profile Page */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        #profile-avatar {
+            width: 150px;
+            height: 150px;
+            border: var(--pixel-border);
+            box-shadow: var(--pixel-shadow);
+            background-color: var(--color-bg-alt);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5rem;
+            color: var(--color-primary);
+            overflow: hidden;
+        }
+        #profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Document Request */
+        .request-status {
+            font-family: var(--font-header);
+            padding: 5px 10px;
+            border: var(--pixel-border);
+        }
+        
+        /* Registration Steps */
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 4px solid var(--color-bg-alt);
+            color: var(--color-text-alt);
+            font-family: var(--font-header);
+        }
+        .step.active {
+            border-bottom-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        /*--------------------------------------------------
+          [6. UTILITIES & HELPERS]
+        ----------------------------------------------------*/
+        .text-success { color: var(--color-success); }
+        .text-danger { color: var(--color-danger); }
+        .text-warning { color: var(--color-warning); }
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 2rem; }
+        .mb-0 { margin-bottom: 0; }
+        .hidden { display: none; }
+        
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        .toast {
+            background-color: var(--color-text);
+            color: var(--color-bg);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            font-family: var(--font-header);
+            border: var(--pixel-border);
+            border-color: var(--color-bg);
+            box-shadow: var(--pixel-shadow);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .toast.success { background-color: var(--color-success); color: #fff; }
+        .toast.error { background-color: var(--color-danger); color: #fff; }
+        .toast.info { background-color: var(--color-info); color: #fff; }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: var(--color-bg);
+            padding: 2rem;
+            border: var(--pixel-border);
+            box-shadow: var(--pixel-shadow);
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: var(--pixel-border);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .modal-header h3 {
+            margin: 0;
+        }
+        .modal-close {
+            font-size: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--color-text);
+        }
+        
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, var(--color-bg-alt) 25%, #e0e0e0 50%, var(--color-bg-alt) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-load 1.5s infinite linear;
+            border-radius: 4px;
+        }
+        .skeleton-text { height: 1em; margin-bottom: 0.5rem; }
+        .skeleton-title { height: 1.5em; width: 50%; margin-bottom: 1rem; }
+        .skeleton-card { height: 150px; }
+        
+        /* Floating Buttons */
+        .floating-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .floating-btn {
+            width: 60px;
+            height: 60px;
+            background-color: var(--color-primary);
+            color: var(--color-bg);
+            border: var(--pixel-border);
+            border-color: var(--color-bg);
+            box-shadow: var(--pixel-shadow);
+            font-size: 1.8rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .floating-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 6px 6px 0px var(--color-shadow);
+        }
+        
+        /* Theme Selector Palette */
+        #theme-palette {
+            background: var(--color-bg);
+            border: var(--pixel-border);
+            box-shadow: var(--pixel-shadow);
+            padding: 1rem;
+            position: absolute;
+            bottom: 75px; /* Above the theme button */
+            right: 0;
+            display: flex;
+            gap: 10px;
+        }
+        .theme-color-box {
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--color-border);
+            cursor: pointer;
+        }
+        .theme-color-box[data-theme="bw"]     { background: #0A0A0A; }
+        .theme-color-box[data-theme="blue"]   { background: #007BFF; }
+        .theme-color-box[data-theme="maroon"] { background: #800000; }
+        .theme-color-box[data-theme="green"]  { background: #006400; }
+        .theme-color-box[data-theme="purple"] { background: #4B0082; }
+        
+        /* Chatbot */
+        #chatbot-window {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background: var(--color-bg);
+            border: var(--pixel-border);
+            box-shadow: var(--pixel-shadow);
+            flex-direction: column;
+            overflow: hidden;
+            display: none; /* Toggled by JS */
+        }
+        #chatbot-header {
+            padding: 10px;
+            background: var(--color-primary);
+            color: var(--color-bg);
+            font-family: var(--font-header);
+        }
+        #chatbot-messages {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-msg {
+            padding: 8px 12px;
+            max-width: 80%;
+        }
+        .chat-msg.user {
+            background: var(--color-bg-alt);
+            align-self: flex-end;
+        }
+        .chat-msg.bot {
+            background: var(--color-primary);
+            color: var(--color-bg);
+            align-self: flex-start;
+        }
+        #chatbot-input {
+            display: flex;
+            border-top: var(--pixel-border);
+        }
+        #chatbot-input input {
+            flex-grow: 1;
+            border: none;
+            margin: 0;
+            padding: 10px;
+        }
+        #chatbot-input button {
+            background: var(--color-primary);
+            color: var(--color-bg);
+            border: none;
+            padding: 0 15px;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* Splash Screen */
+        #splash-screen {
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-out;
+        }
+        #splash-screen i {
+            font-size: 5rem;
+            color: var(--color-primary);
+            animation: pulse 1.5s infinite;
+        }
+        #splash-screen h1 {
+            font-size: 2rem;
+            margin-top: 1rem;
+        }
+        .loader-bar {
+            width: 200px;
+            height: 10px;
+            border: var(--pixel-border);
+            margin-top: 1.5rem;
+        }
+        .loader-bar-inner {
+            width: 0%;
+            height: 100%;
+            background: var(--color-primary);
+            animation: load-fill 1.5s ease-out forwards;
+        }
+
+        /*--------------------------------------------------
+          [7. ANIMATIONS & RESPONSIVENESS]
+        ----------------------------------------------------*/
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        @keyframes skeleton-load {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes load-fill {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr; /* Header + Main */
+            }
+            
+            #sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: var(--pixel-border);
+            }
+            
+            #sidebar-header {
+                font-size: 1.2rem;
+                margin: 0;
+            }
+            #sidebar-header .fa-user-graduate {
+                display: none;
+            }
+            
+            #sidebar-nav {
+                display: flex;
+                flex-direction: row;
+                flex-grow: 0;
+            }
+            
+            #sidebar-nav li a {
+                flex-direction: column;
+                font-size: 0.8rem;
+                padding: 10px;
+                border: none;
+            }
+            #sidebar-nav li a i {
+                margin: 0 0 5px 0;
+            }
+            
+            #sidebar-footer {
+                display: none; /* Hide footer on mobile */
+            }
+
+            #main-app {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+                padding: 1rem;
+            }
+            
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            
+            #page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            #live-datetime {
+                text-align: left;
+                font-size: 1rem;
+            }
+            
+            .floating-container {
+                bottom: 10px;
+                right: 10px;
+            }
+            .floating-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="header-left">
-      <div class="header-profile" id="headerProfile">
-        <img id="headerProfilePic" src="https://via.placeholder.com/48x48?text=PIC" alt="profile">
-        <div class="info">
-          <span id="headerName">Cade Paris A. Medenilla</span>
-          <span id="headerCourse">BS Information Technology</span>
-          <span id="headerYear">Third Year</span>
+
+    <div id="splash-screen">
+        <i class="fa-solid fa-user-graduate"></i>
+        <h1>Student Portal</h1>
+        <p>Initializing System... Please Wait.</p>
+        <div class="loader-bar">
+            <div class="loader-bar-inner"></div>
         </div>
-      </div>
     </div>
 
-    <div class="portal-title">ICCT STUDENT PORTAL</div>
-
-    <div style="display:flex; flex-direction:column; align-items:flex-end;">
-      <div id="datetime"></div>
-      <div style="display:flex; gap:6px; align-items:center;">
-        <button id="themeToggle" onclick="toggleTheme()">SWITCH THEME</button>
-      </div>
-    </div>
-  </header>
-
-  <nav>
-    <button class="active" onclick="showSection('dashboard', event)">Dashboard</button>
-    <button onclick="showSection('profile', event)">Student Profile</button>
-    <button onclick="showSection('subjects', event)">Subjects</button>
-    <button onclick="showSection('schedule', event)">Class Schedule</button>
-    <button onclick="showSection('grades', event)">Grades</button>
-    <button onclick="showSection('requirements', event)">Requirements</button>
-    <button onclick="showSection('account', event)">Account & Payments</button>
-    <button onclick="showSection('clearance', event)">Clearance</button>
-  </nav>
-
-  <div class="content">
-    <section id="dashboard" class="active">
-      <h3>Welcome, Student!</h3>
-      <p>System Status: ONLINE</p>
-
-      <div class="announcement-box">
-        <h4>[ANNOUNCEMENTS]</h4>
-        <ul id="announcementList"></ul>
-      </div>
-    </section>
-
-    <section id="profile">
-      <h3>Student Profile</h3>
-      <button class="edit-btn" onclick="toggleEdit('profile', event)">EDIT</button>
-      <div style="display:flex; align-items:flex-start; gap:20px;">
-        <table id="profileTable" style="flex:1;">
-          <tr><th>Name</th><td>Alexandra Cruz</td></tr>
-          <tr><th>ID Number</th><td>2025-00123</td></tr>
-          <tr><th>Course</th><td>BS Computer Science</td></tr>
-          <tr><th>Year Level</th><td>3rd Year</td></tr>
-          <tr><th>Email</th><td>alex.cruz@example.edu</td></tr>
-        </table>
-
-        <div style="text-align:center;">
-          <img id="profilePic" src="https://via.placeholder.com/120x120?text=Profile" alt="Profile Picture">
-          <input id="uploadPic" type="file" accept="image/*" style="display:none;">
-          <button class="edit-btn" onclick="document.getElementById('uploadPic').click()">UPLOAD</button>
+    <nav id="sidebar">
+        <div>
+            <div id="sidebar-header">
+                <i class="fa-solid fa-user-graduate"></i>
+                Student Portal
+            </div>
+            <ul id="sidebar-nav">
+                <li><a href="#" data-page="dashboard" class="nav-link active"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+                <li><a href="#" data-page="academics" class="nav-link"><i class="fa-solid fa-book-open"></i> Academics</a></li>
+                <li><a href="#" data-page="schedule" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Exam Schedule</a></li>
+                <li><a href="#" data-page="finance" class="nav-link"><i class="fa-solid fa-wallet"></i> Finance</a></li>
+                <li><a href="#" data-page="clearance" class="nav-link"><i class="fa-solid fa-clipboard-check"></i> Clearance</a></li>
+                <li><a href="#" data-page="registration" class="nav-link"><i class="fa-solid fa-user-plus"></i> Registration</a></li>
+                <li><a href="#" data-page="documents" class="nav-link"><i class="fa-solid fa-file-lines"></i> Documents</a></li>
+                <li><a href="#" data-page="profile" class="nav-link"><i class="fa-solid fa-user-cog"></i> Profile</a></li>
+                <li><a href="#" data-page="library" class="nav-link"><i class="fa-solid fa-book-bookmark"></i> Library</a></li>
+                <li><a href="#" data-page="announcements" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Announcements</a></li>
+                <li><a href="#" data-page="evaluation" class="nav-link"><i class="fa-solid fa-star"></i> Evaluation</a></li>
+            </ul>
         </div>
-      </div>
-    </section>
+        <div id="sidebar-footer">
+            <a href="#" data-page="about" class="nav-link">About This Project</a>
+            <p>&copy; 2025 University System</p>
+        </div>
+    </nav>
 
-    <section id="subjects">
-      <h3>Subjects</h3>
-      <button class="edit-btn" onclick="toggleEdit('subjects', event)">EDIT</button>
-      <table id="subjectsTable">
-        <tr><th>Subject Code</th><th>Subject Name</th><th>Units</th></tr>
-        <tr><td>CS301</td><td>Software Engineering</td><td>3</td></tr>
-        <tr><td>CS302</td><td>Database Systems</td><td>3</td></tr>
-        <tr><td>CS303</td><td>Operating Systems</td><td>3</td></tr>
-      </table>
-    </section>
+    <main id="main-app">
+        <div id="page-loader">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text" style="width: 80%;"></div>
+            <br>
+            <div class="skeleton skeleton-card"></div>
+        </div>
+    </main>
 
-    <section id="schedule">
-      <h3>Class Schedule</h3>
-      <button class="edit-btn" onclick="toggleEdit('schedule', event)">EDIT</button>
-      <table id="scheduleTable">
-        <tr><th>Day</th><th>Time</th><th>Subject</th><th>Room</th></tr>
-        <tr><td>Monday</td><td>8:00 - 10:00 AM</td><td>Software Engineering</td><td>CS Bldg 102</td></tr>
-        <tr><td>Wednesday</td><td>10:00 - 12:00 NN</td><td>Database Systems</td><td>CS Lab 201</td></tr>
-      </table>
-    </section>
+    <div class="floating-container">
+        <div id="theme-palette" class="hidden">
+            <div class="theme-color-box" data-theme="bw" title="Black & White"></div>
+            <div class="theme-color-box" data-theme="blue" title="Blue"></div>
+            <div class="theme-color-box" data-theme="maroon" title="Maroon"></div>
+            <div class="theme-color-box" data-theme="green" title="Green"></div>
+            <div class="theme-color-box" data-theme="purple" title="Purple"></div>
+        </div>
+        <button id="theme-toggle-btn" class="floating-btn" title="Change Theme"><i class="fa-solid fa-palette"></i></button>
+        
+        <button id="dark-mode-toggle" class="floating-btn" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+        
+        <button id="focus-mode-toggle" class="floating-btn" title="Focus Mode"><i class="fa-solid fa-compress"></i></button>
+        
+        <button id="chatbot-toggle" class="floating-btn" title="AI Assistant"><i class="fa-solid fa-robot"></i></button>
+    </div>
+    
+    <div id="chatbot-window">
+        <div id="chatbot-header">
+            <span><i class="fa-solid fa-robot"></i> AI Assistant</span>
+            <button id="chatbot-close" class="modal-close" style="color: var(--color-bg);">&times;</button>
+        </div>
+        <div id="chatbot-messages">
+            <div class="chat-msg bot">Hi! How can I help you today? Ask me about enrollment or your exam permit.</div>
+        </div>
+        <div id="chatbot-input">
+            <input type="text" id="chatbot-user-input" placeholder="Type a message...">
+            <button id="chatbot-send"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
 
-    <section id="grades">
-      <h3>Grades and Records</h3>
-      <button class="edit-btn" onclick="toggleEdit('grades', event)">EDIT</button>
-      <table id="gradesTable">
-        <tr><th>Subject</th><th>Midterm</th><th>Final</th><th>Remarks</th></tr>
-        <tr><td>Software Engineering</td><td>1.75</td><td>1.50</td><td>Passed</td></tr>
-        <tr><td>Database Systems</td><td>2.00</td><td>1.75</td><td>Passed</td></tr>
-      </table>
-    </section>
+    <div id="toast-container"></div>
+    
+    <div id="modal-container" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal Title</h3>
+                <button id="modal-close-btn" class="modal-close">&times;</button>
+            </div>
+            <div id="modal-body">
+                <p>This is the modal content.</p>
+            </div>
+            <div id="modal-footer" class="mt-2" style="text-align: right;">
+                <button id="modal-cancel-btn" class="btn">Cancel</button>
+                <button id="modal-confirm-btn" class="btn btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
 
-    <section id="requirements">
-      <h3>Requirements</h3>
-      <button class="edit-btn" onclick="toggleEdit('requirements', event)">EDIT</button>
-      <table id="requirementsTable">
-        <tr><th>Document</th><th>Status</th></tr>
-        <tr><td>Form 137</td><td>Submitted</td></tr>
-        <tr><td>Good Moral</td><td>Pending</td></tr>
-      </table>
-    </section>
+<template id="template-dashboard">
+        <div id="page-header">
+            <div>
+                <h1 id="welcome-message">Welcome, [Student]!</h1>
+                <p id="birthday-message" class="hidden" style="font-size: 1.2rem; font-weight: bold; color: var(--color-primary);">🎉 Happy Birthday!</p>
+            </div>
+            <div id="live-datetime">
+                <div id="live-date"></div>
+                <div id="live-time"></div>
+            </div>
+        </div>
 
-    <section id="account">
-      <h3>Account & Payments</h3>
-      <button class="edit-btn" onclick="toggleEdit('account', event)">EDIT</button>
-      <table id="accountTable">
-        <tr><th>Term</th><th>Balance</th><th>Status</th></tr>
-        <tr><td>1st Semester</td><td>₱2,500.00</td><td>Unpaid</td></tr>
-        <tr><td>2nd Semester</td><td>₱0.00</td><td>Paid</td></tr>
-      </table>
-    </section>
+        <div class="card">
+            <div id="announcement-ticker">
+                <p id="ticker-content">Loading announcements...</p>
+            </div>
+        </div>
 
-    <section id="clearance">
-      <h3>Clearance</h3>
-      <button class="edit-btn" onclick="toggleEdit('clearance', event)">EDIT</button>
-      <table id="clearanceTable">
-        <tr><th>Office</th><th>Status</th></tr>
-        <tr><td>Library</td><td>Cleared</td></tr>
-        <tr><td>Accounting</td><td>Pending</td></tr>
-      </table>
-    </section>
-  </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fa-solid fa-book-open"></i>
+                <h4 id="stat-subjects">0</h4>
+                <p>Enrolled Subjects</p>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <h4 id="stat-gpa">N/A</h4>
+                <p>Current GPA</p>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-wallet"></i>
+                <h4 id="stat-fees" class="text-danger">₱0.00</h4>
+                <p>Outstanding Balance</p>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-clipboard-check"></i>
+                <h4 id="stat-clearance" class="text-warning">Pending</h4>
+                <p>Clearance Status</p>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-ticket"></i>
+                <h4 id="stat-permit" class="text-danger">N/A</h4>
+                <p>Exam Permit</p>
+            </div>
+        </div>
 
-  <div class="footer">© 1998–2025 Student Portal System</div>
+        <div class="card">
+            <h2>Quick Access</h2>
+            <div class="quick-links">
+                <button class="btn nav-btn" data-page="academics"><i class="fa-solid fa-book-open"></i> View Grades</button>
+                <button class="btn nav-btn" data-page="finance"><i class="fa-solid fa-wallet"></i> Pay Tuition</button>
+                <button class="btn nav-btn" data-page="schedule"><i class="fa-solid fa-calendar-days"></i> Exam Schedule</button>
+                <button class="btn nav-btn" data-page="documents"><i class="fa-solid fa-file-lines"></i> Request Document</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Data Visualization</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div>
+                    <h3>Grade Distribution</h3>
+                    <canvas id="dashboard-grade-chart"></canvas>
+                </div>
+                <div>
+                    <h3>Attendance Rate</h3>
+                    <canvas id="dashboard-attendance-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </template>
 
-  <script>
-    /* --------- DOM refs --------- */
-    const profilePic = document.getElementById('profilePic');
-    const uploadInput = document.getElementById('uploadPic');
-    const headerPic = document.getElementById('headerProfilePic');
-    const headerNameEl = document.getElementById('headerName');
-    const headerCourseEl = document.getElementById('headerCourse');
-    const headerYearEl = document.getElementById('headerYear');
+    <template id="template-academics">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-book-open"></i> Academics</h1>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fa-solid fa-ticket"></i> Exam Permit Status</h2>
+            <div id="exam-permit-content">
+                </div>
+            <div id="exam-permit-reminder" class="mt-2 text-center text-warning" style="font-family: var(--font-header); font-size: 1.1rem; display: none;">
+                <i class="fa-solid fa-triangle-exclamation"></i> You must present your Exam Permit before exams.
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fa-solid fa-list-check"></i> Enrolled Subjects</h2>
+            <div style="overflow-x: auto;">
+                <table id="subjects-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Subject Title</th>
+                            <th>Units</th>
+                            <th>Instructor</th>
+                            <th>Schedule</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fa-solid fa-graduation-cap"></i> Grades</h2>
+            <p>Current Academic Standing: <strong id="academic-standing" class="text-success">Good Standing</strong></p>
+            <div style="overflow-x: auto;">
+                <table id="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Code</th>
+                            <th>Midterm</th>
+                            <th>Final</th>
+                            <th>Overall Avg.</th>
+                            <th>Grade (1.00-5.00)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+            <h3>Overall GPA: <span id="overall-gpa" style="color: var(--color-primary);">1.00</span></h3>
+        </div>
 
-    /* --------- Navigation (uses event target) --------- */
-    function showSection(id, evt){
-      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-      const sec = document.getElementById(id);
-      if(sec) sec.classList.add('active');
-      if(evt && evt.target){
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        evt.target.classList.add('active');
-      }
-    }
+        <div class="card">
+            <h2><i class="fa-solid fa-chart-pie"></i> Grade Distribution</h2>
+            <canvas id="grade-distribution-chart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="card gpa-calculator">
+            <h2><i class="fa-solid fa-calculator"></i> GPA Calculator (PH Scale)</h2>
+            <p>Enter your grades (1.00 to 5.00) and units to calculate your GPA.</p>
+            <div class="grid-2">
+                <div>
+                    <div id="gpa-inputs">
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <input type="number" step="0.25" min="1.00" max="5.00" placeholder="Grade (e.g., 1.75)" class="gpa-grade">
+                            <input type="number" min="1" placeholder="Units (e.g., 3)" class="gpa-units">
+                        </div>
+                    </div>
+                    <button id="add-gpa-row" class="btn"><i class="fa-solid fa-plus"></i> Add Subject</button>
+                    <button id="calculate-gpa" class="btn btn-primary"><i class="fa-solid fa-calculator"></i> Calculate</button>
+                </div>
+                <div>
+                    <h3>Calculated GPA:</h3>
+                    <div id="gpa-result">0.00</div>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-finance">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-wallet"></i> Finance</h1>
+        </div>
 
-    /* --------- Live date/time (MM/DD/YYYY and 12-hour clock) --------- */
-    function updateDateTime(){
-      const now = new Date();
-      const mm = String(now.getMonth()+1).padStart(2,'0');
-      const dd = String(now.getDate()).padStart(2,'0');
-      const yyyy = now.getFullYear();
-      let hh = now.getHours();
-      const min = String(now.getMinutes()).padStart(2,'0');
-      const sec = String(now.getSeconds()).padStart(2,'0');
-      const ampm = hh >= 12 ? 'PM' : 'AM';
-      hh = hh % 12 || 12;
-      const time = `${hh}:${min}:${sec} ${ampm}`;
-      const date = `${mm}/${dd}/${yyyy}`;
-      const dt = document.getElementById('datetime');
-      if(dt) dt.innerHTML = `${date}<br>${time}`;
-    }
-    setInterval(updateDateTime, 1000);
-    updateDateTime();
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <h4 id="finance-total-fees">₱0.00</h4>
+                <p>Total Assessed Fees</p>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-money-bill-wave"></i>
+                <h4 id="finance-total-paid">₱0.00</h4>
+                <p>Total Paid</p>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+                <h4 id="finance-balance" class="text-danger">₱0.00</h4>
+                <p>Outstanding Balance</p>
+            </div>
+        </div>
+        
+        <div id="permit-ready-banner" class="card text-center text-success" style="border-color: var(--color-success); display: none;">
+            <h2><i class="fa-solid fa-check-circle"></i> All Cleared!</h2>
+            <p class="mb-0" style="font-size: 1.2rem;">Your account is fully paid. Your <a href="#" class="nav-btn" data-page="academics">Exam Permit</a> is ready for download.</p>
+        </div>
+        
+        <div class="card">
+            <h2>Make a Payment</h2>
+            <p>Simulate a payment using one of the methods below.</p>
+            <div class="form-group">
+                <label for="payment-amount">Amount to Pay:</label>
+                <input type="number" id="payment-amount" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label for="payment-method">Payment Method:</label>
+                <select id="payment-method">
+                    <option value="gcash">GCash</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="card">Credit/Debit Card</option>
+                </select>
+            </div>
+            <button id="simulate-payment-btn" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Submit Payment</button>
+            <button id="pay-full-balance-btn" class="btn btn-success"><i class="fa-solid fa-shield-halved"></i> Pay Full Balance</button>
+            
+            <h3 class="mt-2">Simulate Receipt Upload</h3>
+            <div class="form-group">
+                <label for="upload-receipt">Upload Payment Receipt (Simulation)</label>
+                <input type="file" id="upload-receipt" accept="image/*,.pdf">
+            </div>
+            <button id="submit-receipt-btn" class="btn"><i class="fa-solid fa-upload"></i> Upload</button>
+        </div>
+        
+        <div class="card">
+            <h2>Tentative Assessment of Fees</h2>
+            <div style="overflow-x: auto;">
+                <table id="assessment-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                    <tfoot>
+                        <tr>
+                            <td style="font-weight: bold;">TOTAL FEES</td>
+                            <td style="font-weight: bold;" id="assessment-total">₱0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Payment History</h2>
+            <div style="overflow-x: auto;">
+                <table id="payment-history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reference No.</th>
+                            <th>Amount Paid</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-clearance">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-clipboard-check"></i> Clearance</h1>
+        </div>
+        
+        <div class="card">
+            <h2>Clearance Status</h2>
+            <p>Your clearance is updated automatically by each department. You do not need to take any action unless specified.</p>
+            
+            <h3 id="clearance-progress-text">Progress: 0%</h3>
+            <div class="progress-bar">
+                <div id="clearance-progress-bar" class="progress-bar-inner"></div>
+            </div>
+            
+            <div id="clearance-list">
+                </div>
+            
+            <div id="clearance-complete-banner" class="text-center text-success mt-2" style="font-size: 1.2rem; display: none;">
+                <i class="fa-solid fa-party-horn"></i> <strong>All Requirements Cleared!</strong>
+            </div>
+            
+            <button id="print-clearance-btn" class="btn mt-2"><i class="fa-solid fa-print"></i> Print Clearance Summary</button>
+        </div>
+    </template>
+    
+    <template id="template-profile">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-user-cog"></i> Student Profile</h1>
+        </div>
+        
+        <form id="profile-form">
+            <div class="card">
+                <div class="profile-header">
+                    <div id="profile-avatar">
+                        </div>
+                    <div>
+                        <h2 id="profile-name-header" class="mb-0">[Student Name]</h2>
+                        <p id="profile-id-header" class="mb-0">[Student ID]</p>
+                        <label for="profile-photo-upload" class="btn mt-1"><i class="fa-solid fa-upload"></i> Change Photo</label>
+                        <input type="file" id="profile-photo-upload" class="hidden" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Academic Information</h2>
+                <div class="profile-grid">
+                    <div class="form-group">
+                        <label>Student ID</label>
+                        <input type="text" id="profile-id" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Course</label>
+                        <input type="text" id="profile-course" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Year Level</label>
+                        <input type="number" id="profile-year" min="1" max="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Academic Term</label>
+                        <input type="text" id="profile-term" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>School Year</label>
+                        <input type="text" id="profile-sy" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Academic Status</label>
+                        <input type="text" id="profile-status" disabled>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Personal Information</h2>
+                <div class="profile-grid">
+                    <div class="form-group">
+                        <label for="profile-name">Full Name</label>
+                        <input type="text" id="profile-name">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-email">Email Address</label>
+                        <input type="email" id="profile-email">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-contact">Contact Number</label>
+                        <input type="text" id="profile-contact">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-address">Address</label>
+                        <input type="text" id="profile-address">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-birthday">Birthday</label>
+                        <input type="date" id="profile-birthday">
+                    </div>
+                </div>
+                <p class="text-success"><i class="fa-solid fa-save"></i> Your changes are saved automatically.</p>
+            </div>
+        </form>
+    </template>
+    
+    <template id="template-documents">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-file-lines"></i> Document Request</h1>
+        </div>
 
-    /* --------- Theme toggle with pixel overlay + persistence --------- */
-    function toggleTheme(){
-      const overlay = document.createElement('div');
-      overlay.className = 'pixel-fade';
-      document.body.appendChild(overlay);
-      setTimeout(() => {
-        document.body.classList.toggle('light');
-        localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
-      }, 180);
-      setTimeout(()=> overlay.remove(), 700);
-    }
+        <div class="card">
+            <h2>New Document Request</h2>
+            <form id="doc-request-form">
+                <div class="profile-grid">
+                    <div class="form-group">
+                        <label for="doc-type">Type of Document</label>
+                        <select id="doc-type">
+                            <option value="tor" data-price="150">Transcript of Records (TOR) - ₱150.00</option>
+                            <option value="coe" data-price="50">Certificate of Enrollment - ₱50.00</option>
+                            <option value="gmc" data-price="50">Certificate of Good Moral - ₱50.00</option>
+                            <option value="diploma" data-price="250">Diploma Copy - ₱250.00</option>
+                            <option value="grades" data-price="75">Grade Slip - ₱75.00</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="doc-copies">Number of Copies</label>
+                        <input type="number" id="doc-copies" value="1" min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="doc-purpose">Purpose of Request</label>
+                    <textarea id="doc-purpose" rows="3" placeholder="e.g., For employment, for scholarship"></textarea>
+                </div>
+                
+                <h3>Payment Summary</h3>
+                <p>Document Fee: <span id="doc-fee">₱0.00</span></p>
+                <p>Processing Fee: <span id="doc-processing-fee">₱25.00</span></p>
+                <p style="font-size: 1.2rem; font-weight: bold;">Total Amount: <span id="doc-total-fee">₱25.00</span></p>
+                
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Submit Request & Pay</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>My Requests</h2>
+            <div style="overflow-x: auto;">
+                <table id="doc-request-table">
+                    <thead>
+                        <tr>
+                            <th>Ref. No.</th>
+                            <th>Document</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+            <p class="mt-2 text-warning"><i class="fa-solid fa-bullhorn"></i> <strong>Reminder:</strong> Bring your receipt when picking up your document.</p>
+        </div>
+    </template>
+    
+    <template id="template-registration">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-user-plus"></i> Registration</h1>
+        </div>
+        
+        <div id="registration-content">
+            </div>
+        
+        <div id="reg-new-student" class="hidden">
+            <div class="step-indicator">
+                <div class="step active" data-step="1">1. Select Term</div>
+                <div class="step" data-step="2">2. Select Subjects</div>
+                <div class="step" data-step="3">3. Review & Submit</div>
+            </div>
+            
+            <div id="reg-step-1" class="card reg-step-page">
+                <h2>Step 1: Select Term & Course</h2>
+                <div class="form-group">
+                    <label for="reg-sy">School Year</label>
+                    <select id="reg-sy">
+                        <option>2025-2026</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reg-sem">Semester</label>
+                    <select id="reg-sem">
+                        <option>First Semester</option>
+                        <option>Second Semester</option>
+                        <option>Summer</option>
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label for="reg-course">Course</label>
+                    <select id="reg-course">
+                        <option>BS Information Technology</option>
+                        <option>BS Computer Science</option>
+                        <option>BS Business Administration</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" data-next-step="2">Next <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            
+            <div id="reg-step-2" class="card reg-step-page hidden">
+                <h2>Step 2: Select Subjects</h2>
+                <p>Check the subjects you want to enroll in.</p>
+                <table id="reg-subjects-table">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Code</th>
+                            <th>Title</th>
+                            <th>Units</th>
+                            <th>Schedule</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox" class="reg-subject-check" data-units="3"></td>
+                            <td>CS101</td>
+                            <td>Introduction to Computing</td>
+                            <td>3</td>
+                            <td>TTh 9:00AM - 10:30AM</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="reg-subject-check" data-units="3"></td>
+                            <td>ITP102</td>
+                            <td>Programming Fundamentals</td>
+                            <td>3</td>
+                            <td>MWF 1:00PM - 2:00PM</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="reg-subject-check" data-units="3"></td>
+                            <td>MATH101</td>
+                            <td>College Algebra</td>
+                            <td>3</td>
+                            <td>TTh 10:30AM - 12:00PM</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="reg-subject-check" data-units="2"></td>
+                            <td>PE101</td>
+                            <td>Physical Education 1</td>
+                            <td>2</td>
+                            <td>MW 8:00AM - 9:00AM</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn" data-prev-step="1"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <button class="btn btn-primary" data-next-step="3">Next <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            
+            <div id="reg-step-3" class="card reg-step-page hidden">
+                <h2>Step 3: Review & Submit</h2>
+                <p>Please review your selected subjects and tentative fees before submitting.</p>
+                <h3>Selected Subjects:</h3>
+                <ul id="reg-summary-list">
+                    </ul>
+                <hr style="margin: 1rem 0;">
+                <h3>Total Units: <span id="reg-total-units">0</span></h3>
+                <h3>Tentative Fees: <span id="reg-total-fees">₱0.00</span></h3>
+                <p class="text-warning"><i class="fa-solid fa-triangle-exclamation"></i> This is a tentative assessment. Final fees will be posted to your Finance page upon approval.</p>
+                <button class="btn" data-prev-step="2"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <button id="reg-submit-final" class="btn btn-success"><i class="fa-solid fa-check"></i> Submit Enrollment</button>
+            </div>
+        </div>
+        
+        <div id="reg-existing-student" class="card hidden">
+            <h2 class="text-success"><i class="fa-solid fa-check-circle"></i> Enrollment Complete</h2>
+            <p>You are already enrolled for the <strong>First Semester, SY 2025-2026</strong>.</p>
+            <p>You can view your enrolled subjects on your <a href="#" class="nav-btn" data-page="academics">Academics</a> page and your assessment on the <a href="#" class="nav-btn" data-page="finance">Finance</a> page.</p>
+            <p>Registration is currently locked.</p>
+        </div>
+    </template>
 
-    /* --------- Format date helper (MM/DD/YYYY) --------- */
-    function formatDateMMDDYYYY(date){
-      const mm = String(date.getMonth()+1).padStart(2,'0');
-      const dd = String(date.getDate()).padStart(2,'0');
-      const yyyy = date.getFullYear();
-      return `${mm}/${dd}/${yyyy}`;
-    }
+    <template id="template-schedule">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-calendar-days"></i> Exam Schedule</h1>
+        </div>
+        <div class="card">
+            <h2>Midterm Examinations</h2>
+            <p>Please find your schedule below. <strong>Next Exam</strong> is highlighted.</p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ITP201 - Data Structures</td>
+                            <td>Oct 28, 2025</td>
+                            <td>9:00 AM - 11:00 AM</td>
+                            <td>Room 301</td>
+                        </tr>
+                        <tr style="background-color: var(--color-warning); color: var(--color-text);">
+                            <td><strong>CS201 - Web Development</strong></td>
+                            <td><strong>Oct 29, 2025</strong></td>
+                            <td><strong>1:00 PM - 3:00 PM</strong></td>
+                            <td><strong>Room 302</strong></td>
+                        </tr>
+                        <tr>
+                            <td>ENG101 - Academic Writing</td>
+                            <td>Oct 30, 2025</td>
+                            <td>10:00 AM - 12:00 PM</td>
+                            <td>Room 205</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Schedule</button>
+        </div>
+    </template>
+    
+    <template id="template-library">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-book-bookmark"></i> Library</h1>
+        </div>
+        <div class="card">
+            <h2>Borrowed Books</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Book Title</th>
+                            <th>Date Borrowed</th>
+                            <th>Due Date</th>
+                            <th>Fines</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Clean Code: A Handbook of Agile Software</td>
+                            <td>Oct 1, 2025</td>
+                            <td>Oct 15, 2025</td>
+                            <td class="text-danger">₱50.00 (Overdue)</td>
+                            <td><button class="btn btn-danger">Pay Fine</button></td>
+                        </tr>
+                        <tr>
+                            <td>Database System Concepts</td>
+                            <td>Oct 20, 2025</td>
+                            <td>Nov 3, 2025</td>
+                            <td>₱0.00</td>
+                            <td><button class="btn btn-primary">Renew</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+    
+    <template id="template-announcements">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-bullhorn"></i> Announcements</h1>
+        </div>
+        <div class="form-group" style="max-width: 300px;">
+            <label for="announcement-filter">Filter by Tag:</label>
+            <select id="announcement-filter">
+                <option value="all">All</option>
+                <option value="academic">Academic</option>
+                <option value="finance">Finance</option>
+                <option value="general">General</option>
+            </select>
+        </div>
+        <div id="announcement-list">
+            </div>
+    </template>
+    
+    <template id="template-evaluation">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-star"></i> Professor Evaluation</h1>
+        </div>
+        <div class="card">
+            <h2>Evaluation Form</h2>
+            <p>Your feedback is anonymous and helps us improve. Please rate your professors for the current semester.</p>
+            <form id="eval-form">
+                <div class="form-group">
+                    <label for="eval-prof">Select Professor/Subject</label>
+                    <select id="eval-prof">
+                        <option>Dr. A. Reyes - ITP201</option>
+                        <option>Mr. B. Santos - CS201</option>
+                        <option>Ms. C. Gomez - ENG101</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Rating (1=Poor, 5=Excellent)</label>
+                    <div id="star-rating" style="font-size: 2rem; color: var(--color-text-alt); cursor: pointer;">
+                        <i class="fa-regular fa-star" data-value="1"></i>
+                        <i class="fa-regular fa-star" data-value="2"></i>
+                        <i class="fa-regular fa-star" data-value="3"></i>
+                        <i class="fa-regular fa-star" data-value="4"></i>
+                        <i class="fa-regular fa-star" data-value="5"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="eval-comment">Comments (Optional)</label>
+                    <textarea id="eval-comment" rows="5" placeholder="What did they do well? What can be improved?"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Feedback</button>
+            </form>
+        </div>
+    </template>
+    
+    <template id="template-about">
+        <div id="page-header">
+            <h1><i class="fa-solid fa-circle-info"></i> About This Project</h1>
+        </div>
+        <div class="card">
+            <h2>Student Portal Simulation (Front-End Only)</h2>
+            <p>This website is a <strong>front-end-only demonstration</strong> created using only HTML, CSS, and vanilla JavaScript.</p>
+            <p><strong>There is no real backend or database.</strong> All data is <strong>simulated</strong> and temporarily stored in your browser's <strong>LocalStorage</strong>. This means:</p>
+            <ul>
+                <li>All data (grades, payments, profile info) is mock data generated by JavaScript.</li>
+                <li>Any changes you make (like editing your profile or "paying" tuition) are saved *only* on your current computer and browser.</li>
+                <li>Clearing your browser cache or LocalStorage will reset the portal to its default state.</li>
+                <li>"Uploads" are simulations; no files are actually sent to a server.</li>
+            </ul>
+            <h3>Purpose</h3>
+            <p>This project was built to demonstrate advanced front-end skills, including:</p>
+            <ul>
+                <li>Dynamic page rendering (SPA simulation) with HTML Templates.</li>
+                <li>Complex state management using LocalStorage.</li>
+                <li>Interconnected module logic (e.g., Finance and Clearance status automatically triggering Exam Permit generation).</li>
+                <li>Responsive UI/UX design with a "pixel" theme.</li>
+                <li>Data visualization using Chart.js.</li>
+                <li>Simulating realistic academic workflows (Enrollment, Document Requests, etc.).</li>
+            </ul>
+            <p><em>This is for educational and portfolio purposes only and is not a real, functioning student portal.</em></p>
+        </div>
+    </template>
 
-    /* --------- Load saved data on startup --------- */
-    window.addEventListener('load', ()=>{
-      // theme
-      const savedTheme = localStorage.getItem('theme');
-      if(savedTheme === 'light') document.body.classList.add('light');
+<script>
+document.addEventListener('DOMContentLoaded', () => {
 
-      // tables
-      document.querySelectorAll('table').forEach(t => {
-        const saved = localStorage.getItem(t.id);
-        if(saved) t.innerHTML = saved;
-      });
+    //--------------------------------------------------
+    // [1. STATE MANAGEMENT (LocalStorage "Database")]
+    //--------------------------------------------------
+    
+    const APP_DB_KEY = 'studentPortalData_v1';
 
-      // profile pic
-      const savedPic = localStorage.getItem('profilePic');
-      if(savedPic){
-        profilePic.src = savedPic;
-        headerPic.src = savedPic;
-      }
-
-      // header text: either from saved profile fields or fallback saved strings
-      const storedName = localStorage.getItem('profile_name');
-      const storedCourse = localStorage.getItem('profile_course');
-      const storedYear = localStorage.getItem('profile_year');
-
-      // If profile table exists, use it (it may have been loaded from saved table HTML already)
-      updateHeaderFromProfile();
-
-      // If header text keys exist in localStorage (fallback), apply them
-      if(storedName) headerNameEl.textContent = storedName;
-      if(storedCourse) headerCourseEl.textContent = storedCourse;
-      if(storedYear) headerYearEl.textContent = storedYear;
-
-      // announcements
-      loadAnnouncements();
-    });
-
-    /* --------- Upload profile pic (sync to header + save) --------- */
-    uploadInput.addEventListener('change', e => {
-      const file = e.target.files && e.target.files[0];
-      if(!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev){
-        const data = ev.target.result;
-        profilePic.src = data;
-        headerPic.src = data;
-        localStorage.setItem('profilePic', data);
-      };
-      reader.readAsDataURL(file);
-    });
-
-    /* --------- Toggle Edit / Save for table sections --------- */
-    function toggleEdit(section, evt){
-      const btn = evt && evt.target ? evt.target : null;
-      const table = document.getElementById(section + 'Table');
-      if(!table || !btn) return;
-      const isSave = btn.textContent === 'SAVE';
-      if(isSave){
-        // turn off editing
-        table.querySelectorAll('td').forEach(td => {
-          td.contentEditable = false;
-          td.classList.remove('editable');
-        });
-        btn.textContent = 'EDIT';
-        saveAllData();
-      } else {
-        table.querySelectorAll('td').forEach(td => {
-          td.contentEditable = true;
-          td.classList.add('editable');
-        });
-        btn.textContent = 'SAVE';
-      }
-    }
-
-    /* --------- Save all tables & header profile text to localStorage --------- */
-    function saveAllData(){
-      document.querySelectorAll('table').forEach(t => {
-        localStorage.setItem(t.id, t.innerHTML);
-      });
-      // update header fields from profile table and persist them
-      updateHeaderFromProfile(true);
-    }
-
-    /* --------- Update header from profile table (and optionally persist) --------- */
-    function updateHeaderFromProfile(persist = false){
-      const profileTable = document.getElementById('profileTable');
-      if(!profileTable) return;
-      try{
-        const rows = profileTable.rows;
-        const name = rows[0] && rows[0].cells[1] ? rows[0].cells[1].innerText.trim() : headerNameEl.textContent;
-        const course = rows[2] && rows[2].cells[1] ? rows[2].cells[1].innerText.trim() : headerCourseEl.textContent;
-        const year = rows[3] && rows[3].cells[1] ? rows[3].cells[1].innerText.trim() : headerYearEl.textContent;
-
-        if(name) headerNameEl.textContent = name;
-        if(course) headerCourseEl.textContent = course;
-        if(year) headerYearEl.textContent = year;
-
-        if(persist){
-          localStorage.setItem('profile_name', headerNameEl.textContent);
-          localStorage.setItem('profile_course', headerCourseEl.textContent);
-          localStorage.setItem('profile_year', headerYearEl.textContent);
+    /**
+     * Initializes the default data in LocalStorage if it doesn't exist.
+     */
+    function initData() {
+        if (!localStorage.getItem(APP_DB_KEY)) {
+            console.log('Initializing default data in LocalStorage...');
+            const defaultData = {
+                profile: {
+                    studentId: '2025-00001',
+                    name: 'Juan Dela Cruz',
+                    course: 'BS Information Technology',
+                    yearLevel: 3,
+                    academicTerm: 'First Semester',
+                    schoolYear: '2025-2026',
+                    academicStatus: 'Good Standing',
+                    email: 'juan.delacruz@university.edu',
+                    contact: '0917-123-4567',
+                    address: '123 Rizal Ave, Manila',
+                    birthday: '2004-08-15',
+                    photo: null, // Base64 string of photo
+                },
+                academics: {
+                    subjects: [
+                        { code: 'ITP201', title: 'Data Structures & Algorithms', units: 3, instructor: 'Dr. A. Reyes', schedule: 'TTh 9:00-10:30' },
+                        { code: 'CS201', title: 'Web Development', units: 3, instructor: 'Mr. B. Santos', schedule: 'MWF 1:00-2:00' },
+                        { code: 'ENG101', title: 'Academic Writing', units: 3, instructor: 'Ms. C. Gomez', schedule: 'TTh 10:30-12:00' },
+                        { code: 'FIL101', title: 'Komunikasyon sa Wika', units: 3, instructor: 'Gng. D. Mercado', schedule: 'MWF 2:00-3:00' },
+                    ],
+                    grades: [
+                        { code: 'ITP201', midterm: 1.50, final: 1.75, average: 1.75 },
+                        { code: 'CS201', midterm: 1.25, final: 1.50, average: 1.50 },
+                        { code: 'ENG101', midterm: 2.00, final: 1.75, average: 1.75 },
+                        { code: 'FIL101', midterm: 1.75, final: 2.00, average: 2.00 },
+                    ],
+                    gpa: "1.75",
+                },
+                finance: {
+                    balance: 5500.00, // Starting balance
+                    assessment: {
+                        tuition: 18000.00,
+                        lab: 2000.00,
+                        misc: 1500.00,
+                        discount: -1000.00,
+                        total: 20500.00
+                    },
+                    payments: [
+                        { date: '2025-08-15', ref: 'PAY-20250815-0001', amount: 15000.00, method: 'GCash', status: 'Completed' }
+                    ]
+                },
+                clearance: {
+                    registrar: { status: 'Pending', note: 'Submit Form 137.' },
+                    library: { status: 'Cleared', note: '' },
+                    accounting: { status: 'Pending', note: 'Outstanding balance.' },
+                    medical: { status: 'Cleared', note: '' },
+                    deptHead: { status: 'Cleared', note: '' }
+                },
+                documents: [
+                    { ref: 'DR-20251020-0001', type: 'Transcript of Records', date: '2025-10-20', amount: 175.00, payment: 'Paid', status: 'Processing' }
+                ],
+                announcements: [
+                    { id: 1, tag: 'academic', title: 'Midterm Exam Schedule Posted', date: 'Oct 25, 2025', content: 'The official midterm exam schedule is now available on the "Exam Schedule" page. Please review your schedules accordingly.' },
+                    { id: 2, tag: 'finance', title: 'Final Payment Deadline', date: 'Oct 24, 2025', content: 'The deadline for full payment of tuition for the First Semester is on October 30, 2025. Please settle your accounts to be eligible for the final exams.' },
+                    { id: 3, tag: 'general', title: 'University Day Celebration', date: 'Oct 22, 2025', content: 'Join us for the 50th University Day celebration this Friday! Classes will be suspended.' }
+                ],
+                attendance: {
+                    'ITP201': 95,
+                    'CS201': 100,
+                    'ENG101': 92,
+                    'FIL101': 98
+                },
+                settings: {
+                    theme: 'bw', // bw, blue, maroon, green, purple
+                    darkMode: false,
+                },
+                examPermit: null, // Will be generated
+                isEnrolled: true, // For registration module
+            };
+            saveData(defaultData);
         }
-      }catch(err){
-        console.warn('updateHeaderFromProfile failed', err);
-      }
     }
 
-    /* expose save function (useful when user clicks SAVE) */
-    window.saveAllData = saveAllData;
-
-    /* --------- keep header in sync after manual edits (optional auto-run) --------- */
-    // When the profile table is saved, we call updateHeaderFromProfile(true) in saveAllData.
-    // Also offer a MutationObserver to update header live while editing (non-persistent until Save).
-    (function observeProfileEdits(){
-      const profileTable = document.getElementById('profileTable');
-      if(!profileTable) return;
-      const obs = new MutationObserver(()=> updateHeaderFromProfile(false));
-      obs.observe(profileTable, { subtree:true, characterData:true, childList:true });
-    })();
-
-    /* --------- Load announcements (spaced, MM/DD/YYYY, scrollable) --------- */
-    function loadAnnouncements(){
-      const list = document.getElementById('announcementList');
-      if(!list) return;
-      // Clear existing (in case)
-      list.innerHTML = '';
-
-      const today = formatDateMMDDYYYY(new Date());
-      const announcements = [
-        "New Students (Freshmen, Transferees and Second Coursers) are WELCOME to enroll this 2nd Trimester Academic Year 2025-2026!",
-        "Walk-In / Online Application and Enrollment ongoing up to November 29, 2025. Classes start December 3, 2025.",
-        "Robothinks are coming this 2026! Buy your ticket now!"
-      ];
-
-      announcements.forEach(text => {
-        const li = document.createElement('li');
-        // add spacing by splitting into short paragraphs if needed (we keep it simple and readable)
-        li.textContent = `${text} (Posted: ${today})`;
-        list.appendChild(li);
-      });
+    /**
+     * Loads the entire data object from LocalStorage.
+     * @returns {object} The student data object.
+     */
+    function loadData() {
+        return JSON.parse(localStorage.getItem(APP_DB_KEY));
     }
 
-  </script>
+    /**
+     * Saves the entire data object to LocalStorage.
+     * @param {object} data The student data object.
+     */
+    function saveData(data) {
+        localStorage.setItem(APP_DB_KEY, JSON.stringify(data));
+    }
+
+    //--------------------------------------------------
+    // [2. UTILITY FUNCTIONS]
+    //--------------------------------------------------
+
+    const mainApp = document.getElementById('main-app');
+    const toastContainer = document.getElementById('toast-container');
+    const modalContainer = document.getElementById('modal-container');
+    let gradeChartInstance = null;
+    let dashboardGradeChart = null;
+    let dashboardAttenChart = null;
+
+    /**
+     * Shows a toast notification.
+     * @param {string} message The message to display.
+     * @param {string} type 'info', 'success', or 'error'.
+     */
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => toast.classList.add('show'), 100);
+
+        // Animate out and remove
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+
+    /**
+     * Shows a confirmation modal.
+     * @param {string} title The modal title.
+     * @param {string} body The modal body text.
+     * @param {function} onConfirm Callback function if "Confirm" is clicked.
+     */
+    function showModal(title, body, onConfirm) {
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-body').innerHTML = body; // Use innerHTML to allow HTML content
+        
+        const confirmBtn = document.getElementById('modal-confirm-btn');
+        const cancelBtn = document.getElementById('modal-cancel-btn');
+        const closeBtn = document.getElementById('modal-close-btn');
+        
+        // Clone and replace button to remove old event listeners
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+
+        newConfirmBtn.onclick = () => {
+            if (onConfirm) onConfirm();
+            modalContainer.classList.remove('show');
+        };
+        newCancelBtn.onclick = () => modalContainer.classList.remove('show');
+        newCloseBtn.onclick = () => modalContainer.classList.remove('show');
+
+        modalContainer.classList.add('show');
+    }
+
+    /**
+     * Updates the live date and time display.
+     */
+    function updateDateTime() {
+        const dateEl = document.getElementById('live-date');
+        const timeEl = document.getElementById('live-time');
+        if (!dateEl || !timeEl) return;
+
+        const now = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
+
+        dateEl.textContent = now.toLocaleDateString(undefined, dateOptions);
+        timeEl.textContent = now.toLocaleTimeString(undefined, timeOptions);
+    }
+    
+    /**
+     * Generates a unique ID with a prefix.
+     * @param {string} prefix e.g., 'PAY' or 'DR'
+     * @returns {string} Generated ID
+     */
+    function generateId(prefix) {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+        return `${prefix}-${yyyy}${mm}${dd}-${random}`;
+    }
+    
+    /**
+     * Formats a number to Philippine Peso currency.
+     * @param {number} amount The number to format.
+     * @returns {string} Formatted currency string.
+     */
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+        }).format(amount);
+    }
+    
+    /**
+     * Converts a base64 string to an avatar initial.
+     * @param {string} name The student's name.
+     * @returns {string} The first initial.
+     */
+    function getInitials(name) {
+        if (!name) return '?';
+        const parts = name.split(' ');
+        return parts[0][0].toUpperCase();
+    }
+    
+    /**
+     * Simulates printing the page.
+     * @param {string} title The document title for printing.
+     */
+    function printPage(title) {
+        const originalTitle = document.title;
+        document.title = title;
+        window.print();
+        document.title = originalTitle;
+    }
+
+    //--------------------------------------------------
+    // [3. CORE APPLICATION & NAVIGATION (SPA Router)]
+    //--------------------------------------------------
+
+    const pageRenderFunctions = {
+        'dashboard': renderDashboard,
+        'academics': renderAcademics,
+        'schedule': renderSchedule,
+        'finance': renderFinance,
+        'clearance': renderClearance,
+        'registration': renderRegistration,
+        'documents': renderDocRequest,
+        'profile': renderProfile,
+        'library': renderLibrary,
+        'announcements': renderAnnouncements,
+        'evaluation': renderEvaluation,
+        'about': renderAbout,
+    };
+
+    /**
+     * Navigates to a new page, rendering its template.
+     * @param {string} pageName The key of the page (e.g., 'dashboard').
+     */
+    function navigateTo(pageName) {
+        // Destroy old charts to prevent memory leaks
+        if (gradeChartInstance) gradeChartInstance.destroy();
+        if (dashboardGradeChart) dashboardGradeChart.destroy();
+        if (dashboardAttenChart) dashboardAttenChart.destroy();
+
+        // Show skeleton loader
+        mainApp.innerHTML = `
+            <div id="page-loader">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                <br>
+                <div class="skeleton skeleton-card"></div>
+            </div>`;
+
+        const template = document.getElementById(`template-${pageName}`);
+        if (!template) {
+            mainApp.innerHTML = `<h1>Error: Page not found</h1><p>The template for "${pageName}" does not exist.</p>`;
+            return;
+        }
+
+        // Simulate loading delay
+        setTimeout(() => {
+            const content = template.content.cloneNode(true);
+            mainApp.innerHTML = ''; // Clear loader
+            mainApp.appendChild(content);
+            document.title = `Student Portal | ${pageName.charAt(0).toUpperCase() + pageName.slice(1)}`;
+
+            // Call the corresponding render function
+            if (pageRenderFunctions[pageName]) {
+                pageRenderFunctions[pageName]();
+            }
+
+            // Update active sidebar link
+            document.querySelectorAll('#sidebar-nav .nav-link').forEach(link => {
+                link.classList.toggle('active', link.dataset.page === pageName);
+            });
+            
+            // Re-attach common listeners for buttons inside the new content
+            attachCommonListeners();
+
+        }, 500); // 0.5s loading simulation
+    }
+
+    /**
+     * Attaches event listeners that need to be re-attached after every page load.
+     */
+    function attachCommonListeners() {
+        // Find any "nav-btn" buttons (like quick links) and make them navigate
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo(btn.dataset.page);
+            });
+        });
+    }
+
+    //--------------------------------------------------
+    // [4. KEY LOGIC: EXAM PERMIT]
+    //--------------------------------------------------
+
+    /**
+     * Checks finance and clearance status to generate or update the exam permit.
+     * This is the CORE interconnected logic.
+     */
+    function checkExamPermitStatus() {
+        const data = loadData();
+        
+        const financeCleared = data.finance.balance <= 0;
+        const allClearance = Object.values(data.clearance).every(item => item.status === 'Cleared');
+        
+        // Update accounting clearance based on finance
+        if (financeCleared && data.clearance.accounting.status !== 'Cleared') {
+            data.clearance.accounting.status = 'Cleared';
+            data.clearance.accounting.note = 'Account fully paid.';
+            saveData(data);
+            showToast('Accounting Office Cleared!', 'success');
+        } else if (!financeCleared && data.clearance.accounting.status === 'Cleared') {
+            // This case might happen if a new fee is added
+            data.clearance.accounting.status = 'Pending';
+            data.clearance.accounting.note = 'Outstanding balance.';
+            saveData(data);
+        }
+
+        if (financeCleared && allClearance) {
+            // All conditions met. Generate permit if it doesn't exist.
+            if (!data.examPermit || data.examPermit.status !== 'Approved') {
+                data.examPermit = {
+                    permitNumber: generateId('PERMIT'),
+                    studentName: data.profile.name,
+                    studentId: data.profile.studentId,
+                    course: data.profile.course,
+                    semester: `${data.profile.academicTerm}, ${data.profile.schoolYear}`,
+                    examDates: 'October 28-31, 2025', // Simulated
+                    allowedSubjects: data.academics.subjects.map(s => s.code).join(', '),
+                    signature: 'Dr. Evelyn R. Favis', // Simulated Registrar
+                    status: 'Approved'
+                };
+                saveData(data);
+                showToast('🎉 Exam Permit Generated! Ready for download.', 'success');
+            }
+        } else {
+            // Conditions not met.
+            if (data.examPermit) {
+                data.examPermit.status = 'Pending';
+                saveData(data);
+            }
+        }
+    }
+    
+    /**
+     * Renders the HTML for the exam permit based on status.
+     * @returns {string} HTML content for the permit viewer.
+     */
+    function getExamPermitHTML() {
+        checkExamPermitStatus(); // Always double-check status before rendering
+        const data = loadData();
+        const permit = data.examPermit;
+
+        if (permit && permit.status === 'Approved') {
+            document.getElementById('exam-permit-reminder')?.style.display.block;
+            return `
+                <div class="exam-permit-container">
+                    <div class="permit-header">
+                        <h3>Official Examination Permit</h3>
+                        <p>${permit.semester}</p>
+                    </div>
+                    <div class="permit-grid">
+                        <div>
+                            <p><strong>Student:</strong> ${permit.studentName}</p>
+                            <p><strong>ID Number:</strong> ${permit.studentId}</p>
+                            <p><strong>Course:</strong> ${permit.course}</p>
+                        </div>
+                        <div>
+                            <p><strong>Permit No:</strong> ${permit.permitNumber}</p>
+                            <p><strong>Exam Dates:</strong> ${permit.examDates}</p>
+                        </div>
+                    </div>
+                    <p class="mt-2"><strong>Allowed Subjects:</strong><br> ${permit.allowedSubjects}</p>
+                    <div class="text-center mt-2">
+                        <div class="permit-signature">${permit.signature}</div>
+                        <p><strong>University Registrar</strong></p>
+                    </div>
+                    <div class="permit-status status-approved mt-2">
+                        <i class="fa-solid fa-check-circle"></i> APPROVED
+                    </div>
+                </div>
+                <button class="btn btn-primary mt-2" onclick="printPage('Exam-Permit-${permit.studentId}')">
+                    <i class="fa-solid fa-print"></i> Print/Download Permit
+                </button>
+            `;
+        } else {
+            // Find out what's pending
+            let pendingItems = [];
+            if (data.finance.balance > 0) {
+                pendingItems.push(`Accounting (Balance: ${formatCurrency(data.finance.balance)})`);
+            }
+            Object.entries(data.clearance).forEach(([dept, info]) => {
+                if (info.status === 'Pending' && dept !== 'accounting') {
+                    pendingItems.push(`${dept.charAt(0).toUpperCase() + dept.slice(1)} (${info.note})`);
+                }
+            });
+
+            return `
+                <div class="exam-permit-container">
+                    <div class="permit-status status-pending">
+                        <i class="fa-solid fa-times-circle"></i> PENDING REQUIREMENTS
+                    </div>
+                    <h3 class="mt-2">Please clear the following items to generate your permit:</h3>
+                    <ul>
+                        ${pendingItems.map(item => `<li class="text-danger" style="font-size: 1.1rem;">${item}</li>`).join('')}
+                    </ul>
+                    <p class="mt-2">Visit the <a href="#" class="nav-btn" data-page="finance">Finance</a> and <a href="#" class="nav-btn" data-page="clearance">Clearance</a> pages for more details.</p>
+                </div>
+            `;
+        }
+    }
+
+
+    //--------------------------------------------------
+    // [5. PAGE RENDER FUNCTIONS]
+    //--------------------------------------------------
+
+    /** Renders the Dashboard */
+    function renderDashboard() {
+        const data = loadData();
+        
+        // Welcome & Birthday Message
+        document.getElementById('welcome-message').textContent = `Welcome, ${data.profile.name}!`;
+        const today = new Date();
+        const bday = new Date(data.profile.birthday);
+        if (today.getMonth() === bday.getMonth() && today.getDate() === bday.getDate()) {
+            document.getElementById('birthday-message').classList.remove('hidden');
+        }
+
+        // Live Date/Time
+        updateDateTime();
+        setInterval(updateDateTime, 1000); // Start clock
+
+        // Ticker
+        document.getElementById('ticker-content').textContent = data.announcements
+            .map(a => `[${a.tag.toUpperCase()}] ${a.title}`)
+            .join(' ||| ');
+
+        // Stats
+        const subjectsCount = data.academics.subjects.length;
+        const gpa = data.academics.gpa;
+        const balance = data.finance.balance;
+        const allClear = Object.values(data.clearance).every(item => item.status === 'Cleared');
+        
+        document.getElementById('stat-subjects').textContent = subjectsCount;
+        document.getElementById('stat-gpa').textContent = gpa;
+        
+        const balanceEl = document.getElementById('stat-fees');
+        balanceEl.textContent = formatCurrency(balance);
+        balanceEl.className = balance > 0 ? 'text-danger' : 'text-success';
+
+        const clearanceEl = document.getElementById('stat-clearance');
+        clearanceEl.textContent = allClear ? 'Cleared' : 'Pending';
+        clearanceEl.className = allClear ? 'text-success' : 'text-warning';
+        
+        const permitEl = document.getElementById('stat-permit');
+        const permitReady = allClear && balance <= 0;
+        permitEl.textContent = permitReady ? 'Ready' : 'Pending';
+        permitEl.className = permitReady ? 'text-success' : 'text-danger';
+
+        // Charts
+        const gradeCtx = document.getElementById('dashboard-grade-chart').getContext('2d');
+        const grades = data.academics.grades.map(g => g.average);
+        dashboardGradeChart = new Chart(gradeCtx, {
+            type: 'bar',
+            data: {
+                labels: data.academics.subjects.map(s => s.code),
+                datasets: [{
+                    label: 'Overall Grade',
+                    data: grades,
+                    backgroundColor: 'var(--color-primary)',
+                    borderColor: 'var(--color-border)',
+                    borderWidth: 2
+                }]
+            },
+            options: { scales: { y: { beginAtZero: false, max: 5.0, reverse: true } } }
+        });
+        
+        const attenCtx = document.getElementById('dashboard-attendance-chart').getContext('2d');
+        dashboardAttenChart = new Chart(attenCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data.attendance),
+                datasets: [{
+                    label: 'Attendance %',
+                    data: Object.values(data.attendance),
+                    backgroundColor: ['#007BFF', '#800000', '#006400', '#4B0082'],
+                }]
+            }
+        });
+    }
+    
+    /** Renders the Academics Page */
+    function renderAcademics() {
+        const data = loadData();
+        
+        // Render Exam Permit
+        document.getElementById('exam-permit-content').innerHTML = getExamPermitHTML();
+        if (data.examPermit && data.examPermit.status === 'Approved') {
+            document.getElementById('exam-permit-reminder').style.display = 'block';
+        }
+        
+        // Render Subjects Table
+        const subjectsTbody = document.getElementById('subjects-table').querySelector('tbody');
+        subjectsTbody.innerHTML = data.academics.subjects.map(s => `
+            <tr>
+                <td>${s.code}</td>
+                <td>${s.title}</td>
+                <td>${s.units}</td>
+                <td>${s.instructor}</td>
+                <td>${s.schedule}</td>
+            </tr>
+        `).join('');
+        
+        // Render Grades Table
+        const gradesTbody = document.getElementById('grades-table').querySelector('tbody');
+        gradesTbody.innerHTML = data.academics.grades.map(g => `
+            <tr>
+                <td>${g.code}</td>
+                <td>${g.midterm.toFixed(2)}</td>
+                <td>${g.final.toFixed(2)}</td>
+                <td><strong>${g.average.toFixed(2)}</strong></td>
+                <td class="text-success" style="font-weight: bold;">${g.average.toFixed(2)}</td>
+            </tr>
+        `).join('');
+        
+        document.getElementById('academic-standing').textContent = data.profile.academicStatus;
+        document.getElementById('overall-gpa').textContent = data.academics.gpa;
+        
+        // Render Grade Distribution Chart
+        const ctx = document.getElementById('grade-distribution-chart').getContext('2d');
+        const gradeValues = data.academics.grades.map(g => g.average);
+        gradeChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.academics.subjects.map(s => s.code),
+                datasets: [{
+                    label: 'Grades',
+                    data: gradeValues,
+                    backgroundColor: 'var(--color-primary)',
+                    borderColor: 'var(--color-border)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 1.0,
+                        max: 5.0,
+                        reverse: true, // Philippine grading system
+                        ticks: { stepSize: 0.25 }
+                    }
+                }
+            }
+        });
+        
+        // GPA Calculator Logic
+        document.getElementById('add-gpa-row').addEventListener('click', () => {
+            const inputsDiv = document.getElementById('gpa-inputs');
+            const newRow = document.createElement('div');
+            newRow.className = 'form-group';
+            newRow.style.display = 'flex';
+            newRow.style.gap = '10px';
+            newRow.innerHTML = `
+                <input type="number" step="0.25" min="1.00" max="5.00" placeholder="Grade (e.g., 1.75)" class="gpa-grade">
+                <input type="number" min="1" placeholder="Units (e.g., 3)" class="gpa-units">
+            `;
+            inputsDiv.appendChild(newRow);
+        });
+
+        document.getElementById('calculate-gpa').addEventListener('click', () => {
+            const grades = document.querySelectorAll('.gpa-grade');
+            const units = document.querySelectorAll('.gpa-units');
+            let totalQualityPoints = 0;
+            let totalUnits = 0;
+
+            for (let i = 0; i < grades.length; i++) {
+                const grade = parseFloat(grades[i].value);
+                const unit = parseFloat(units[i].value);
+                if (!isNaN(grade) && !isNaN(unit) && unit > 0) {
+                    totalQualityPoints += grade * unit;
+                    totalUnits += unit;
+                }
+            }
+            
+            const gpa = totalUnits > 0 ? (totalQualityPoints / totalUnits) : 0;
+            document.getElementById('gpa-result').textContent = gpa.toFixed(2);
+        });
+    }
+    
+    /** Renders the Finance Page */
+    function renderFinance() {
+        const data = loadData();
+        
+        document.getElementById('finance-total-fees').textContent = formatCurrency(data.finance.assessment.total);
+        const totalPaid = data.finance.payments.reduce((sum, p) => sum + p.amount, 0);
+        document.getElementById('finance-total-paid').textContent = formatCurrency(totalPaid);
+        
+        const balanceEl = document.getElementById('finance-balance');
+        balanceEl.textContent = formatCurrency(data.finance.balance);
+        balanceEl.className = data.finance.balance > 0 ? 'text-danger' : 'text-success';
+        
+        // Show/Hide Permit Ready Banner
+        const banner = document.getElementById('permit-ready-banner');
+        if (data.finance.balance <= 0) {
+            banner.style.display = 'block';
+        } else {
+            banner.style.display = 'none';
+        }
+        
+        // Render Assessment Table
+        const assessTbody = document.getElementById('assessment-table').querySelector('tbody');
+        assessTbody.innerHTML = `
+            <tr><td>Tuition Fee</td><td>${formatCurrency(data.finance.assessment.tuition)}</td></tr>
+            <tr><td>Laboratory Fees</td><td>${formatCurrency(data.finance.assessment.lab)}</td></tr>
+            <tr><td>Miscellaneous Fees</td><td>${formatCurrency(data.finance.assessment.misc)}</td></tr>
+            <tr><td>Discount</td><td class="text-success">${formatCurrency(data.finance.assessment.discount)}</td></tr>
+        `;
+        document.getElementById('assessment-total').textContent = formatCurrency(data.finance.assessment.total);
+        
+        // Render Payment History
+        const historyTbody = document.getElementById('payment-history-table').querySelector('tbody');
+        historyTbody.innerHTML = data.finance.payments.map(p => `
+            <tr>
+                <td>${p.date}</td>
+                <td>${p.ref}</td>
+                <td>${formatCurrency(p.amount)}</td>
+                <td>${p.method}</td>
+                <td class="text-success">${p.status}</td>
+            </tr>
+        `).join('');
+        
+        // Payment Simulation Listeners
+        document.getElementById('pay-full-balance-btn').addEventListener('click', () => {
+            if (data.finance.balance <= 0) {
+                showToast('No outstanding balance.', 'info');
+                return;
+            }
+            const amountToPay = data.finance.balance;
+            
+            showModal(
+                'Confirm Full Payment',
+                `Are you sure you want to pay the full balance of <strong>${formatCurrency(amountToPay)}</strong>?`,
+                () => {
+                    // Add to payment history
+                    data.finance.payments.push({
+                        date: new Date().toISOString().split('T')[0],
+                        ref: generateId('PAY'),
+                        amount: amountToPay,
+                        method: 'Simulated Full Pay',
+                        status: 'Completed'
+                    });
+                    // Update balance
+                    data.finance.balance = 0;
+                    
+                    saveData(data);
+                    showToast('Payment Successful! Balance is now ₱0.00', 'success');
+                    renderFinance(); // Re-render the page
+                    checkExamPermitStatus(); // CRITICAL: Check for permit
+                }
+            );
+        });
+        
+        document.getElementById('simulate-payment-btn').addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('payment-amount').value);
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid amount.', 'error');
+                return;
+            }
+            if (amount > data.finance.balance) {
+                showToast(`Amount exceeds balance of ${formatCurrency(data.finance.balance)}.`, 'error');
+                return;
+            }
+            
+            const method = document.getElementById('payment-method').value;
+            
+            showModal(
+                'Confirm Payment',
+                `Simulate payment of <strong>${formatCurrency(amount)}</strong> via ${method}?`,
+                () => {
+                    data.finance.payments.push({
+                        date: new Date().toISOString().split('T')[0],
+                        ref: generateId('PAY'),
+                        amount: amount,
+                        method: method,
+                        status: 'Completed'
+                    });
+                    data.finance.balance -= amount;
+                    saveData(data);
+                    showToast(`Payment of ${formatCurrency(amount)} successful!`, 'success');
+                    renderFinance(); // Re-render
+                    checkExamPermitStatus(); // CRITICAL: Check for permit
+                }
+            );
+        });
+        
+        // Receipt Upload Simulation
+        document.getElementById('submit-receipt-btn').addEventListener('click', () => {
+            const fileInput = document.getElementById('upload-receipt');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showToast('Please select a file to upload.', 'error');
+                return;
+            }
+            // Simulate validation
+            showToast('Validating receipt...', 'info');
+            setTimeout(() => {
+                const isValid = Math.random() > 0.2; // 80% chance of valid
+                if (isValid) {
+                    showModal('Receipt Validated', 'Your receipt has been validated. Payment will be posted within 24-48 hours.', () => {});
+                } else {
+                    showModal('Invalid Receipt', 'The uploaded receipt could not be validated. Please try again or contact accounting.', () => {});
+                }
+                fileInput.value = ''; // Clear file input
+            }, 1500);
+        });
+    }
+
+    /** Renders the Clearance Page */
+    function renderClearance() {
+        checkExamPermitStatus(); // Sync accounting status
+        const data = loadData();
+        
+        const listEl = document.getElementById('clearance-list');
+        listEl.innerHTML = ''; // Clear list
+        
+        const items = Object.entries(data.clearance);
+        let clearedCount = 0;
+        
+        items.forEach(([dept, info]) => {
+            const isCleared = info.status === 'Cleared';
+            if (isCleared) clearedCount++;
+            
+            const statusClass = isCleared ? 'text-success' : 'text-danger';
+            const icon = isCleared ? 'fa-check-circle' : 'fa-times-circle';
+            const deptName = dept.charAt(0).toUpperCase() + dept.slice(1).replace('Head', ' Head');
+            
+            listEl.innerHTML += `
+                <div class="clearance-item">
+                    <div>
+                        <h3 class="mb-0">${deptName}</h3>
+                        ${info.note ? `<p class="mb-0 ${statusClass}">${info.note}</p>` : ''}
+                    </div>
+                    <div class="clearance-status ${statusClass}">
+                        <i class="fa-solid ${icon}"></i> ${info.status}
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Update Progress Bar
+        const progress = (clearedCount / items.length) * 100;
+        document.getElementById('clearance-progress-bar').style.width = `${progress}%`;
+        document.getElementById('clearance-progress-text').textContent = `Progress: ${clearedCount} / ${items.length} Cleared (${progress.toFixed(0)}%)`;
+        
+        const banner = document.getElementById('clearance-complete-banner');
+        if (progress === 100) {
+            banner.style.display = 'block';
+        } else {
+            banner.style.display = 'none';
+        }
+        
+        document.getElementById('print-clearance-btn').addEventListener('click', () => {
+            printPage(`Clearance-Summary-${data.profile.studentId}`);
+        });
+    }
+    
+    /** Renders the Profile Page */
+    function renderProfile() {
+        const data = loadData();
+        const profile = data.profile;
+        
+        // Populate header
+        document.getElementById('profile-name-header').textContent = profile.name;
+        document.getElementById('profile-id-header').textContent = profile.studentId;
+        
+        // Populate avatar
+        const avatarEl = document.getElementById('profile-avatar');
+        if (profile.photo) {
+            avatarEl.innerHTML = `<img src="${profile.photo}" alt="Profile Photo">`;
+        } else {
+            avatarEl.innerHTML = `<span>${getInitials(profile.name)}</span>`;
+        }
+        
+        // Populate form fields
+        document.getElementById('profile-id').value = profile.studentId;
+        document.getElementById('profile-course').value = profile.course;
+        document.getElementById('profile-year').value = profile.yearLevel;
+        document.getElementById('profile-term').value = profile.academicTerm;
+        document.getElementById('profile-sy').value = profile.schoolYear;
+        document.getElementById('profile-status').value = profile.academicStatus;
+        document.getElementById('profile-name').value = profile.name;
+        document.getElementById('profile-email').value = profile.email;
+        document.getElementById('profile-contact').value = profile.contact;
+        document.getElementById('profile-address').value = profile.address;
+        document.getElementById('profile-birthday').value = profile.birthday;
+        
+        // Auto-save listener
+        document.getElementById('profile-form').addEventListener('input', (e) => {
+            const data = loadData();
+            // Get ID from input, remove 'profile-' prefix
+            const key = e.target.id.substring(8); 
+            if (data.profile.hasOwnProperty(key)) {
+                data.profile[key] = e.target.value;
+                saveData(data);
+                // Live update header
+                if (key === 'name') {
+                    document.getElementById('profile-name-header').textContent = e.target.value;
+                }
+            }
+        });
+        
+        // Profile photo upload simulation
+        document.getElementById('profile-photo-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const base64String = event.target.result;
+                    const data = loadData();
+                    data.profile.photo = base64String;
+                    saveData(data);
+                    
+                    // Update avatar preview
+                    avatarEl.innerHTML = `<img src="${base64String}" alt="Profile Photo">`;
+                    showToast('Profile photo updated!', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    /** Renders the Document Request Page */
+    function renderDocRequest() {
+        const data = loadData();
+        
+        // Render table
+        const tableBody = document.getElementById('doc-request-table').querySelector('tbody');
+        if (data.documents.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="7" class="text-center">No document requests found.</td></tr>`;
+        } else {
+            tableBody.innerHTML = data.documents.map(doc => `
+                <tr>
+                    <td>${doc.ref}</td>
+                    <td>${doc.type}</td>
+                    <td>${doc.date}</td>
+                    <td>${formatCurrency(doc.amount)}</td>
+                    <td><span class="request-status text-success">${doc.payment}</span></td>
+                    <td><span class="request-status text-warning"><i class="fa-solid fa-clock"></i> ${doc.status}</span></td>
+                    <td><button class="btn btn-primary" data-ref="${doc.ref}" onclick="viewDocReceipt(this)">View Receipt</button></td>
+                </tr>
+            `).join('');
+        }
+        
+        // Form logic
+        const form = document.getElementById('doc-request-form');
+        const typeEl = document.getElementById('doc-type');
+        const copiesEl = document.getElementById('doc-copies');
+        const feeEl = document.getElementById('doc-fee');
+        const processingFee = 25.00;
+        const totalEl = document.getElementById('doc-total-fee');
+        
+        document.getElementById('doc-processing-fee').textContent = formatCurrency(processingFee);
+
+        // Update total on change
+        function updateDocFee() {
+            const selectedOption = typeEl.options[typeEl.selectedIndex];
+            const price = parseFloat(selectedOption.dataset.price);
+            const copies = parseInt(copiesEl.value) || 1;
+            const docFee = price * copies;
+            const totalFee = docFee + processingFee;
+            
+            feeEl.textContent = formatCurrency(docFee);
+            totalEl.textContent = formatCurrency(totalFee);
+        }
+        typeEl.addEventListener('change', updateDocFee);
+        copiesEl.addEventListener('input', updateDocFee);
+        updateDocFee(); // Initial call
+        
+        // Form submit
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const purpose = document.getElementById('doc-purpose').value;
+            if (!purpose) {
+                showToast('Please enter the purpose of the request.', 'error');
+                return;
+            }
+            
+            const total = parseFloat(totalEl.textContent.replace(/[^0-9.-]+/g,""));
+            const type = typeEl.options[typeEl.selectedIndex].text.split(' - ')[0];
+
+            showModal(
+                'Confirm Request & Payment',
+                `This will simulate a payment of <strong>${formatCurrency(total)}</strong> for <strong>${type}</strong>. Proceed?`,
+                () => {
+                    const newRequest = {
+                        ref: generateId('DR'),
+                        type: type,
+                        date: new Date().toISOString().split('T')[0],
+                        amount: total,
+                        payment: 'Paid',
+                        status: 'Processing'
+                    };
+                    
+                    const data = loadData();
+                    data.documents.push(newRequest);
+                    saveData(data);
+                    
+                    showToast('Request submitted and paid successfully!', 'success');
+                    form.reset();
+                    renderDocRequest(); // Re-render page
+                }
+            );
+        });
+    }
+    
+    // JS is global, so we can define this function here
+    window.viewDocReceipt = (btn) => {
+        const ref = btn.dataset.ref;
+        const data = loadData();
+        const doc = data.documents.find(d => d.ref === ref);
+        if (!doc) return;
+        
+        showModal(
+            'Digital Receipt',
+            `
+            <div class="exam-permit-container" style="border-style: solid; text-align: left;">
+                <h3 class="text-center">Official Receipt</h3>
+                <p><strong>Ref. No:</strong> ${doc.ref}</p>
+                <p><strong>Date:</strong> ${doc.date}</p>
+                <hr>
+                <p><strong>Student:</strong> ${data.profile.name}</p>
+                <p><strong>Document:</strong> ${doc.type}</p>
+                <hr>
+                <h3 class="text-right">Total Paid: ${formatCurrency(doc.amount)}</h3>
+                <p class="text-center text-success" style="font-size: 1.2rem; font-weight: bold;">STATUS: PAID</p>
+            </div>
+            `,
+            () => printPage(`Receipt-${doc.ref}`) // OnConfirm
+        );
+        document.getElementById('modal-confirm-btn').innerHTML = '<i class="fa-solid fa-print"></i> Print';
+    }
+    
+    /** Renders the Registration Page */
+    function renderRegistration() {
+        const data = loadData();
+        const regContent = document.getElementById('registration-content');
+        
+        if (data.isEnrolled) {
+            // Student is already enrolled, show "locked" view
+            const template = document.getElementById('reg-existing-student');
+            regContent.innerHTML = template.innerHTML;
+        } else {
+            // Show new student enrollment wizard
+            const template = document.getElementById('reg-new-student');
+            regContent.innerHTML = template.innerHTML;
+            
+            const steps = regContent.querySelectorAll('.step');
+            const pages = regContent.querySelectorAll('.reg-step-page');
+            
+            function showStep(stepNum) {
+                steps.forEach(s => {
+                    const sNum = parseInt(s.dataset.step);
+                    s.classList.toggle('active', sNum <= stepNum);
+                });
+                pages.forEach(p => {
+                    p.classList.toggle('hidden', p.id !== `reg-step-${stepNum}`);
+                });
+            }
+            
+            // Step navigation
+            regContent.querySelectorAll('[data-next-step]').forEach(btn => {
+                btn.addEventListener('click', () => showStep(parseInt(btn.dataset.nextStep)));
+            });
+            regContent.querySelectorAll('[data-prev-step]').forEach(btn => {
+                btn.addEventListener('click', () => showStep(parseInt(btn.dataset.prevStep)));
+            });
+            
+            // Logic for Step 3 (Review)
+            regContent.querySelector('[data-next-step="3"]').addEventListener('click', () => {
+                const checkedSubjects = regContent.querySelectorAll('.reg-subject-check:checked');
+                const summaryList = regContent.querySelector('#reg-summary-list');
+                let totalUnits = 0;
+                
+                summaryList.innerHTML = '';
+                checkedSubjects.forEach(chk => {
+                    const row = chk.closest('tr');
+                    const title = row.cells[2].textContent;
+                    const units = parseInt(chk.dataset.units);
+                    totalUnits += units;
+                    
+                    const li = document.createElement('li');
+                    li.textContent = `${title} (${units} units)`;
+                    summaryList.appendChild(li);
+                });
+                
+                if (checkedSubjects.length === 0) {
+                    summaryList.innerHTML = '<li>No subjects selected.</li>';
+                }
+                
+                const tentativeFees = (totalUnits * 1000) + 3500; // 1k per unit + 3.5k misc (simulated)
+                regContent.querySelector('#reg-total-units').textContent = totalUnits;
+                regContent.querySelector('#reg-total-fees').textContent = formatCurrency(tentativeFees);
+            });
+            
+            // Final Submit
+            regContent.querySelector('#reg-submit-final').addEventListener('click', () => {
+                showModal(
+                    'Confirm Enrollment',
+                    'Are you sure you want to submit your registration? This action is final.',
+                    () => {
+                        const data = loadData();
+                        data.isEnrolled = true;
+                        // ... (add logic to populate subjects, create assessment, etc.)
+                        saveData(data);
+                        showToast('Enrollment Successful!', 'success');
+                        navigateTo('dashboard'); // Go to dashboard
+                    }
+                );
+            });
+
+            showStep(1); // Start at step 1
+        }
+    }
+    
+    /** Renders the Announcements Page */
+    function renderAnnouncements() {
+        const data = loadData();
+        const listEl = document.getElementById('announcement-list');
+        listEl.innerHTML = '';
+        
+        const filter = document.getElementById('announcement-filter').value;
+        
+        const announcements = data.announcements.filter(a => filter === 'all' || a.tag === filter);
+        
+        if (announcements.length === 0) {
+            listEl.innerHTML = '<p>No announcements found for this filter.</p>';
+            return;
+        }
+        
+        announcements.forEach(a => {
+            listEl.innerHTML += `
+                <div class="card">
+                    <span class="request-status" style="background-color: var(--color-bg-alt);">${a.tag.toUpperCase()}</span>
+                    <h3 class="mt-1">${a.title}</h3>
+                    <p class="text-alt" style="font-size: 0.9rem;">Posted on: ${a.date}</p>
+                    <p>${a.content}</p>
+                    <button class="btn tts-btn" data-text="${a.title}. ${a.content}"><i class="fa-solid fa-volume-high"></i> Read Aloud</button>
+                </div>
+            `;
+        });
+        
+        // Add filter listener
+        document.getElementById('announcement-filter').addEventListener('change', renderAnnouncements);
+        
+        // Add TTS listeners
+        document.querySelectorAll('.tts-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const text = btn.dataset.text;
+                const utterance = new SpeechSynthesisUtterance(text);
+                speechSynthesis.speak(utterance);
+            });
+        });
+    }
+    
+    /** Renders the Evaluation Page */
+    function renderEvaluation() {
+        const stars = document.querySelectorAll('#star-rating .fa-star');
+        let currentRating = 0;
+        
+        stars.forEach(star => {
+            star.addEventListener('mouseover', () => {
+                const rating = star.dataset.value;
+                stars.forEach(s => {
+                    s.classList.toggle('fa-solid', s.dataset.value <= rating);
+                    s.classList.toggle('fa-regular', s.dataset.value > rating);
+                });
+            });
+            
+            star.addEventListener('mouseout', () => {
+                stars.forEach(s => {
+                    s.classList.toggle('fa-solid', s.dataset.value <= currentRating);
+                    s.classList.toggle('fa-regular', s.dataset.value > currentRating);
+                });
+            });
+            
+            star.addEventListener('click', () => {
+                currentRating = star.dataset.value;
+            });
+        });
+        
+        document.getElementById('eval-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (currentRating === 0) {
+                showToast('Please select a star rating.', 'error');
+                return;
+            }
+            
+            showModal(
+                'Feedback Submitted',
+                'Thank you for your feedback! Your response has been recorded anonymously.',
+                () => {}
+            );
+            document.getElementById('modal-confirm-btn').classList.add('hidden');
+            document.getElementById('modal-cancel-btn').textContent = 'Close';
+            
+            // Reset form
+            document.getElementById('eval-form').reset();
+            currentRating = 0;
+            stars.forEach(s => {
+                s.classList.add('fa-regular');
+                s.classList.remove('fa-solid');
+            });
+        });
+    }
+
+    // --- Stub Render Functions ---
+    function renderSchedule() { /* Template is static HTML */ }
+    function renderLibrary() { /* Template is static HTML */ }
+    function renderAbout() { /* Template is static HTML */ }
+
+    //--------------------------------------------------
+    // [6. UI/UX & BONUS FEATURES]
+    //--------------------------------------------------
+
+    /** Handles theme switching */
+    function initTheme() {
+        const data = loadData();
+        const settings = data.settings;
+        
+        // Apply saved settings on load
+        if (settings.darkMode) {
+            document.body.classList.add('dark-mode');
+            document.getElementById('dark-mode-toggle').innerHTML = '<i class="fa-solid fa-sun"></i>';
+        }
+        document.body.dataset.theme = settings.theme;
+        
+        // Dark Mode Toggle
+        document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+            const data = loadData();
+            const isDark = document.body.classList.toggle('dark-mode');
+            document.getElementById('dark-mode-toggle').innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            data.settings.darkMode = isDark;
+            saveData(data);
+        });
+        
+        // Theme Palette Toggle
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        const themePalette = document.getElementById('theme-palette');
+        themeBtn.addEventListener('click', () => {
+            themePalette.classList.toggle('hidden');
+        });
+        
+        // Theme Color Selection
+        document.querySelectorAll('.theme-color-box').forEach(box => {
+            box.addEventListener('click', () => {
+                const theme = box.dataset.theme;
+                document.body.dataset.theme = theme;
+                const data = loadData();
+                data.settings.theme = theme;
+                saveData(data);
+                themePalette.classList.add('hidden');
+            });
+        });
+    }
+    
+    /** Handles chatbot logic */
+    function initChatbot() {
+        const toggleBtn = document.getElementById('chatbot-toggle');
+        const closeBtn = document.getElementById('chatbot-close');
+        const windowEl = document.getElementById('chatbot-window');
+        const sendBtn = document.getElementById('chatbot-send');
+        const inputEl = document.getElementById('chatbot-user-input');
+        const messagesEl = document.getElementById('chatbot-messages');
+        
+        toggleBtn.addEventListener('click', () => windowEl.style.display = 'flex');
+        closeBtn.addEventListener('click', () => windowEl.style.display = 'none');
+        
+        function addMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-msg ${sender}`;
+            msgDiv.textContent = text;
+            messagesEl.appendChild(msgDiv);
+            messagesEl.scrollTop = messagesEl.scrollHeight; // Auto-scroll
+        }
+        
+        function getBotResponse(query) {
+            query = query.toLowerCase();
+            if (query.includes('enroll') || query.includes('registration')) {
+                return 'To enroll, go to the "Registration" page. If you are a new student, follow the steps. If you are an existing student, your enrolled subjects will be displayed.';
+            }
+            if (query.includes('permit') || query.includes('exam')) {
+                return 'Your Exam Permit is automatically generated once your Tuition Balance is fully paid and all your Clearance requirements are marked "Cleared". You can check the status on the "Academics" page.';
+            }
+            if (query.includes('grades')) {
+                return 'You can view your grades, subjects, and GPA on the "Academics" page.';
+            }
+            if (query.includes('payment') || query.includes('tuition') || query.includes('balance')) {
+                return 'Visit the "Finance" page to see your outstanding balance, payment history, and make a simulated payment.';
+            }
+            if (query.includes('hello') || query.includes('hi')) {
+                return 'Hello! How can I assist you?';
+            }
+            return "I'm sorry, I'm just a simple bot. I can answer questions about enrollment, exam permits, grades, and payments.";
+        }
+        
+        function handleSend() {
+            const query = inputEl.value.trim();
+            if (!query) return;
+            
+            addMessage(query, 'user');
+            inputEl.value = '';
+            
+            setTimeout(() => {
+                const response = getBotResponse(query);
+                addMessage(response, 'bot');
+            }, 1000);
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        inputEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+    }
+    
+    /** Handles Focus Mode */
+    function initFocusMode() {
+        const toggleBtn = document.getElementById('focus-mode-toggle');
+        toggleBtn.addEventListener('click', () => {
+            const isFocused = document.body.classList.toggle('focus-mode');
+            toggleBtn.innerHTML = isFocused ? '<i class="fa-solid fa-expand"></i>' : '<i class="fa-solid fa-compress"></i>';
+            toggleBtn.title = isFocused ? 'Exit Focus Mode' : 'Focus Mode';
+            // Trigger chart redraw after transition
+            setTimeout(() => {
+                if (gradeChartInstance) gradeChartInstance.resize();
+                if (dashboardGradeChart) dashboardGradeChart.resize();
+                if (dashboardAttenChart) dashboardAttenChart.resize();
+            }, 300);
+        });
+    }
+    
+    /** Handles Konami Code Easter Egg */
+    function initKonamiCode() {
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        let konamiIndex = 0;
+        document.addEventListener('keydown', (e) => {
+            if (e.key === konamiSequence[konamiIndex]) {
+                konamiIndex++;
+                if (konamiIndex === konamiSequence.length) {
+                    konamiIndex = 0;
+                    showModal('EASTER EGG!', '<p>🎉 Konami Code Activated! 🎉</p><p>All hail the pixel university!</p>', () => {});
+                    document.getElementById('modal-confirm-btn').classList.add('hidden');
+                    document.getElementById('modal-cancel-btn').textContent = 'Awesome!';
+                }
+            } else {
+                konamiIndex = 0;
+            }
+        });
+    }
+
+    /** Handles Splash Screen */
+    function initSplashScreen() {
+        const splash = document.getElementById('splash-screen');
+        setTimeout(() => {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.style.display = 'none', 500);
+        }, 1500); // Must match loader bar animation
+    }
+
+    //--------------------------------------------------
+    // [7. APP INITIALIZATION]
+    //--------------------------------------------------
+
+    function initApp() {
+        initData();          // 1. Set up LocalStorage
+        initTheme();         // 2. Apply theme and dark mode
+        initChatbot();       // 3. Init chatbot
+        initFocusMode();     // 4. Init focus mode
+        initKonamiCode();    // 5. Init easter egg
+        initSplashScreen();  // 6. Hide splash screen
+        
+        // Add global sidebar listeners
+        document.querySelectorAll('#sidebar-nav .nav-link, #sidebar-footer .nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = link.dataset.page;
+                if (page) navigateTo(page);
+            });
+        });
+        
+        // Start on the dashboard
+        navigateTo('dashboard');
+    }
+
+    // Run the app!
+    initApp();
+});
+</script>
+
 </body>
 </html>
